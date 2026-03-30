@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agentic Platform v1.1 – Agent-First Spec-Kit Autonomous SDLC + HITL Governance</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+        :root {
+            --bg: #111115;
+            --bg-card: #111115;
+            --bg-container: #151518;
+            --border: #2a2a30;
+            --border-bright: #3a3a42;
+            --text: #8a8f9a;
+            --text-mid: #b0b4be;
+            --text-bright: #d4d6de;
+            --text-white: #eaecf2;
+            --text-dim: #505460;
+
+            /* Phase 1 — Amber */
+            --p1: #f59e0b;
+            --p1-bright: #fbbf24;
+            --p1-dim: #92400e;
+            --p1-bg: #16140e;
+            --p1-border: #5a4820;
+            --p1-card-bg: var(--bg);
+            --p1-card-border: #2a2510;
+            --p1-badge-bg: #2a1e00;
+            --p1-badge-text: #fde047;
+            --p1-dot: #f59e0b;
+
+            /* Phase 2 — Purple */
+            --p2: #a78bfa;
+            --p2-bright: #c084fc;
+            --p2-dim: #5b21b6;
+            --p2-bg: #13101e;
+            --p2-border: #4a3a70;
+            --p2-card-bg: var(--bg);
+            --p2-card-border: #28204a;
+            --p2-badge-bg: #1a0e2e;
+            --p2-badge-text: #c084fc;
+            --p2-dot: #a78bfa;
+
+            /* Phase 3a — Blue */
+            --p3a: #3b82f6;
+            --p3a-bright: #60a5fa;
+            --p3a-bg: #0e1220;
+            --p3a-border: #2a3a6a;
+            --p3a-card-bg: var(--bg);
+            --p3a-card-border: #1e2840;
+
+            /* Phase 3b — Green */
+            --p3b: #34d399;
+            --p3b-bright: #4ade80;
+            --p3b-bg: #0e1610;
+            --p3b-border: #1a3020;
+
+            /* Phase M — Blue (autonomous) */
+            --pm: #38bdf8;
+            --pm-bright: #7dd3fc;
+            --pm-dim: #0369a1;
+            --pm-bg: #0e1420;
+            --pm-border: #1e4070;
+            --pm-card-bg: var(--bg);
+            --pm-card-border: #1a2a44;
+            --pm-badge-bg: #0a1e3a;
+            --pm-badge-text: #7dd3fc;
+            --pm-dot: #38bdf8;
+
+            /* Shared accents */
+            --cyan: #22d3ee;
+            --green: #34d399;
+            --green-bright: #4ade80;
+            --green-dim: #065f46;
+            --yellow: #fbbf24;
+            --orange: #f59e0b;
+            --red: #ef4444;
+            --purple: #a78bfa;
+            --blue: #3b82f6;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { background:var(--bg); color:var(--text); font-family:'Inter',-apple-system,sans-serif; font-size:10.5px; line-height:1.45; min-width:1248px; }
+        .page { width:1248px; margin:0 auto; padding:18px 28px 14px; }
+
+        .mono { font-family:'JetBrains Mono',monospace; }
+        .fw600 { font-weight:600; } .fw700 { font-weight:700; } .u { text-decoration:underline; }
+        .hl-o { color:var(--p1-bright); font-weight:600; }
+
+        /* ─── HEADER ─── */
+        .hdr-meta { font-family:'JetBrains Mono',monospace; font-size:8px; color:var(--text-dim); letter-spacing:2.5px; text-transform:uppercase; margin-bottom:3px; }
+        .hdr-title { font-size:22px; font-weight:800; color:var(--text-white); margin-bottom:5px; letter-spacing:-0.3px; }
+        .hdr-desc { font-size:10px; color:var(--text-dim); margin-bottom:14px; line-height:1.5; }
+
+        /* ─── PHASE BADGES ─── */
+        .badge { display:inline-block; font-family:'JetBrains Mono',monospace; font-size:8.5px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; padding:3px 10px; border-radius:3px; }
+        .badge.p1 { background:var(--p1-badge-bg); color:var(--p1-badge-text); }
+        .badge.p2 { background:var(--p2-badge-bg); color:var(--p2-badge-text); }
+        .badge.p3 { background:#181c24; color:#60a5fa; }
+        .badge.pm { background:var(--pm-badge-bg); color:var(--pm-badge-text); }
+        .phase-sub { font-family:'JetBrains Mono',monospace; font-size:8px; color:var(--text-dim); letter-spacing:1px; margin-top:3px; margin-bottom:8px; }
+        .section-row { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px; }
+        .phase-hdr { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px; }
+        .section-right { font-size:8.5px; color:var(--text-dim); font-style:italic; text-align:right; max-width:480px; }
+
+        /* ─── PHASE 1 (AMBER) ─── */
+        .p1-box { background:var(--p1-bg); border:2px solid var(--p1-border); border-radius:8px; padding:16px; }
+        .stages { display:grid; grid-template-columns:1fr auto 1fr auto 1fr auto 1fr; gap:0; align-items:stretch; }
+        .s1-card { background:var(--p1-card-bg); border:1px solid var(--p1-card-border); border-radius:6px; padding:10px 11px; }
+        .s1-card.lit { border-color:#6a5a20; box-shadow:0 0 16px rgba(245,158,11,0.08); }
+        .stage-num { font-family:'JetBrains Mono',monospace; font-size:7px; color:var(--text-dim); letter-spacing:1.5px; text-transform:uppercase; margin-bottom:2px; }
+        .stage-t { font-size:12.5px; font-weight:700; color:var(--text-white); margin-bottom:7px; display:flex; align-items:center; gap:5px; }
+        .src-label { font-family:'JetBrains Mono',monospace; font-size:7px; color:var(--text-dim); letter-spacing:1.5px; text-transform:uppercase; margin-bottom:4px; }
+        .src-item { font-size:9.5px; color:var(--text); padding:2px 0; display:flex; align-items:center; gap:6px; }
+        .src-dot { width:5px; height:5px; border-radius:50%; background:var(--p1); flex-shrink:0; }
+        .src-tag { font-size:9px; color:var(--text); }
+        .s1-card ul { list-style:none; margin-bottom:6px; }
+        .s1-card li { font-size:9.5px; color:var(--text); padding:2px 0; display:flex; align-items:flex-start; gap:6px; }
+        .s1-card li .bul { color:var(--p1); flex-shrink:0; font-size:9.5px; line-height:1.45; }
+        .out-label { font-family:'JetBrains Mono',monospace; font-size:8px; color:var(--p1-bright); margin-top:8px; font-weight:600; }
+        .out-val { font-family:'JetBrains Mono',monospace; font-size:8.5px; color:var(--text); font-weight:400; }
+        .arrow-col { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:0 2px; min-width:38px; }
+        .arrow-line { width:100%; height:1px; background:var(--p1-dim); position:relative; opacity:0.5; }
+        .arrow-line::after { content:'›'; position:absolute; right:-3px; top:-7px; color:var(--p1-dim); font-size:12px; }
+        .arrow-lbl { font-family:'JetBrains Mono',monospace; font-size:6px; color:var(--text-dim); letter-spacing:0.3px; margin-top:2px; white-space:nowrap; }
+        .stage-icon { width:20px; height:20px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:10px; flex-shrink:0; background:var(--bg-card); }
+        .stage-icon.pencil { background:#2a2520; }
+        .conv-btn { display:inline-flex; align-items:center; gap:5px; background:var(--bg-card); border:1px solid #3a3020; border-radius:4px; padding:5px 9px; font-size:8px; color:var(--p1-bright); margin-top:10px; font-family:'JetBrains Mono',monospace; }
+        .conv-btn .cb-icon { width:14px; height:14px; border-radius:50%; background:#2a2520; display:inline-flex; align-items:center; justify-content:center; font-size:8px; }
+
+        /* ─── HANDOFF (AMBER → PURPLE) ─── */
+
+        /* ─── PHASE 2 (PURPLE) ─── */
+        .p2-box { background:var(--p2-bg); border:2px solid var(--p2-border); border-radius:8px; padding:16px; }
+        .p2-flow { display:flex; gap:0; align-items:center; position:relative; }
+        .p2-col-left { flex:0 0 220px; display:flex; flex-direction:column; gap:10px; z-index:1; }
+        .p2-col-mid { flex:0 0 210px; display:flex; align-items:center; z-index:1; }
+        .p2-col-right { flex:1; display:flex; align-items:center; z-index:1; }
+
+        .p2-horiz-conn {
+            display:flex; flex-direction:column; align-items:center; justify-content:center;
+            padding:0 6px; min-width:50px;
+        }
+        .p2-hc-wrap { display:flex; align-items:center; gap:0; width:100%; position:relative; }
+        .p2-hc-dot { width:10px; height:10px; border-radius:50%; border:2px solid var(--p2); background:var(--p2-bg); flex-shrink:0; z-index:2; }
+        .p2-hc-line { flex:1; height:1px; background:var(--p2-card-border); }
+        .p2-hc-arrow { color:var(--p2-dim); font-size:10px; margin-left:-2px; }
+        .p2-hc-lbl { font-family:'JetBrains Mono',monospace; font-size:6.5px; color:var(--text-dim); margin-top:3px; white-space:nowrap; }
+
+        .art-card { background:var(--p2-card-bg); border:1px solid var(--p2-card-border); border-radius:6px; padding:11px 12px; }
+        .art-label { font-family:'JetBrains Mono',monospace; font-size:7px; color:var(--text-dim); letter-spacing:1.2px; text-transform:uppercase; margin-bottom:2px; }
+        .art-title { font-size:12.5px; font-weight:700; color:var(--text-white); margin-bottom:8px; display:flex; align-items:center; gap:5px; }
+        .art-title .art-ico { width:20px; height:20px; border-radius:4px; background:#201c28; display:inline-flex; align-items:center; justify-content:center; font-size:11px; }
+
+        .fi-pill { display:flex; align-items:center; gap:6px; padding:2px 0; font-size:9.5px; color:var(--text); margin-bottom:2px; }
+        .fi-pill .fi-dot { width:5px; height:5px; border-radius:50%; background:var(--p2); flex-shrink:0; }
+
+        .owner-badge {
+            display:inline-block; margin-top:8px; padding:4px 8px;
+            background:#222018; border-radius:3px;
+            font-family:'JetBrains Mono',monospace; font-size:8px;
+        }
+        .owner-badge .ob-label { color:var(--orange); font-weight:700; }
+        .owner-badge .ob-val { color:var(--text); }
+
+        .spec-card { background:var(--p2-card-bg); border:1px solid var(--p2-card-border); border-radius:6px; padding:11px 12px; width:100%; }
+        .spec-card .st { font-size:12.5px; font-weight:700; color:var(--text-white); display:flex; align-items:center; gap:5px; margin-bottom:8px; }
+        .spec-card .chk { color:var(--text); font-size:14px; }
+        .chk-pill { display:flex; align-items:center; gap:6px; padding:2px 0; font-size:9.5px; color:var(--text); margin-bottom:2px; }
+        .chk-pill .chk-dot { width:5px; height:5px; border-radius:50%; background:var(--p2); flex-shrink:0; }
+
+        .trans-card {
+            position:relative; width:100%;
+            border:2px solid var(--p2); border-radius:8px;
+            padding:20px 13px 12px; margin-top:8px;
+            background:var(--p2-card-bg);
+        }
+        .trans-label {
+            position:absolute; top:-9px; left:14px;
+            font-family:'JetBrains Mono',monospace; font-size:8px; color:var(--p2);
+            letter-spacing:2.5px; text-transform:uppercase;
+            background:var(--p2-bg); padding:0 8px;
+        }
+        .plan-t {
+            font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:700;
+            color:var(--text-white); margin-bottom:10px; display:flex; align-items:center; gap:6px;
+        }
+        .plan-t .plan-ico { width:22px; height:22px; border-radius:4px; background:#201c28; display:inline-flex; align-items:center; justify-content:center; font-size:12px; }
+        .plan-pill { display:flex; align-items:center; gap:6px; padding:2px 0; font-size:9.5px; color:var(--text); margin-bottom:2px; }
+        .plan-pill .pp-dot { width:5px; height:5px; border-radius:50%; background:var(--p2); flex-shrink:0; }
+
+        .gate-badge {
+            display:inline-block; margin-top:8px; padding:5px 9px;
+            background:#222018; border-radius:4px;
+            font-family:'JetBrains Mono',monospace; font-size:8px;
+        }
+        .gate-badge .gb-label { color:var(--orange); font-weight:700; }
+        .gate-badge .gb-val { color:var(--text); }
+
+        /* ─── FEATUREOUTLOOK EXTENSION MODEL ─── */
+        .sk-model { background:var(--p2-bg); border:1px solid var(--p2-border); border-radius:6px; padding:14px 16px; }
+        .sk-title { font-family:'JetBrains Mono',monospace; font-size:9px; font-weight:700; color:var(--text-bright); letter-spacing:1.5px; text-transform:uppercase; margin-bottom:10px; }
+        .sk-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; }
+        .sk-col h4 { font-size:8.5px; font-weight:600; color:var(--text-dim); margin-bottom:7px; }
+        .ftag { display:inline-block; padding:2.5px 7px; border-radius:3px; font-family:'JetBrains Mono',monospace; font-size:7.5px; margin:1.5px 1px; }
+        .ftag.core { background:#222028; border:1px solid var(--border-bright); color:var(--text); }
+        .ftag.ext { background:var(--bg-card); border:1px solid var(--border); color:var(--text); }
+        .ftag.hl { background:var(--bg-card); border:1px solid #5a4a20; color:var(--yellow); }
+        .sk-note { font-size:8px; color:var(--text-dim); margin-top:5px; font-style:italic; }
+        .cond-row { font-size:8.5px; color:var(--text); padding:2px 0; }
+        .cond-row .k { font-family:'JetBrains Mono',monospace; color:var(--text); font-weight:500; }
+        .ext-grid { display:grid; grid-template-columns:1fr 1fr; gap:3px; }
+
+        /* ─── PHASE M (BLUE — autonomous) ─── */
+        .pm-box { background:var(--pm-bg); border:2px solid var(--pm-border); border-radius:8px; padding:16px; display:flex; flex-direction:column; height:100%; }
+        .pm-stage { background:var(--pm-card-bg); border:1px solid var(--pm-card-border); border-radius:5px; padding:12px 13px; margin-bottom:10px; }
+        .pm-stage .sn { font-family:'JetBrains Mono',monospace; font-size:7px; color:var(--text-dim); letter-spacing:1.5px; text-transform:uppercase; margin-bottom:2px; }
+        .pm-stage .st { font-size:12.5px; font-weight:700; color:var(--text-white); margin-bottom:7px; display:flex; align-items:center; gap:5px; }
+        .pm-stage ul { list-style:none; }
+        .pm-stage li { font-size:9.5px; color:var(--text); padding:2px 0; display:flex; align-items:flex-start; gap:6px; }
+        .pm-stage li .bul { color:var(--pm); flex-shrink:0; font-size:9.5px; line-height:1.45; }
+        .pm-stage .out { font-family:'JetBrains Mono',monospace; font-size:8px; color:var(--pm-bright); margin-top:8px; font-weight:600; }
+        .pm-stage .outv { font-family:'JetBrains Mono',monospace; font-size:8.5px; color:var(--text); font-weight:400; }
+        .pm-scan-tag { display:inline-block; padding:2.5px 7px; border-radius:3px; font-family:'JetBrains Mono',monospace; font-size:8px; margin:1.5px 1px; }
+        .pm-scan-tag.qodana { background:var(--bg-card); border:1px solid #3a3020; color:#f97316; }
+        .pm-scan-tag.snyk { background:var(--bg-card); border:1px solid #2a3a2e; color:#4ade80; }
+        .pm-scan-tag.sonar { background:var(--pm-card-bg); border:1px solid var(--pm-card-border); color:var(--pm-bright); }
+        .pm-scan-tag.custom { background:var(--bg-card); border:1px solid #3a3020; color:#fbbf24; }
+        .pm-arrow { display:flex; flex-direction:column; align-items:center; padding:2px 0; }
+        .pm-arrow .arr { font-family:'JetBrains Mono',monospace; font-size:8px; color:var(--pm); opacity:0.5; }
+        .pm-hitl-gate { background:var(--pm-card-bg); border:1px solid var(--pm-card-border); border-radius:5px; padding:10px 11px; }
+        .pm-hitl-gate .gate-title { font-size:12.5px; font-weight:700; color:var(--text-white); margin-bottom:7px; display:flex; align-items:center; gap:5px; }
+        .pm-hitl-gate .gate-desc { font-size:9px; color:var(--text-dim); margin-bottom:6px; }
+        .pm-hitl-gate ul { list-style:none; }
+        .pm-hitl-gate li { font-size:9.5px; color:var(--text); padding:2px 0; display:flex; align-items:flex-start; gap:6px; }
+        .pm-hitl-gate li .bul { color:var(--pm); }
+        .pm-converge { text-align:center; padding:10px 0 4px; font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--text-dim); }
+        .pm-converge span { color:var(--pm); font-weight:700; }
+
+        .pm-trans-card {
+            position:relative; width:100%;
+            border:2px solid var(--pm); border-radius:8px;
+            padding:20px 12px 12px; margin-bottom:8px;
+            background:var(--pm-card-bg);
+        }
+        .pm-trans-label {
+            position:absolute; top:-9px; left:14px;
+            font-family:'JetBrains Mono',monospace; font-size:8px; color:var(--pm);
+            letter-spacing:2.5px; text-transform:uppercase;
+            background:var(--pm-bg); padding:0 8px;
+        }
+
+        /* ─── MAIN GRID LAYOUT ─── */
+        .main-grid {
+            display:grid;
+            grid-template-columns:2fr 1fr;
+            gap:24px;
+            align-items:start;
+        }
+        .main-grid .g-left { grid-column:1; grid-row:1; min-width:0; display:flex; flex-direction:column; gap:14px; }
+        .main-grid .g-pm { grid-column:2; grid-row:1; min-width:0; align-self:stretch; }
+        .main-grid .g-full { grid-column:1 / -1; min-width:0; }
+
+
+        /* ─── ORCHESTRATOR ─── */
+        .orch {
+            background:var(--bg-container); border:1px solid var(--border); border-radius:6px;
+            padding:14px 16px; margin-bottom:10px;
+            display:grid; grid-template-columns:auto 1fr; gap:16px; align-items:center;
+        }
+        .orch-left {
+            display:flex; align-items:center; gap:8px; flex-wrap:wrap; max-width:420px;
+        }
+        .orch-dot { width:8px; height:8px; border-radius:50%; background:#22d3ee; flex-shrink:0; }
+        .orch-name { font-family:'JetBrains Mono',monospace; font-size:9.5px; font-weight:700; color:var(--text-white); letter-spacing:1.2px; text-transform:uppercase; white-space:nowrap; }
+        .orch-desc { font-size:8.5px; color:var(--text-dim); letter-spacing:0.3px; text-transform:uppercase; }
+        .orch-pills { display:flex; gap:6px; align-items:center; white-space:nowrap; overflow-x:auto; scrollbar-width:none; }
+        .orch-pills::-webkit-scrollbar { display:none; }
+        .pill { display:inline-block; padding:4px 11px; border:1px solid #1a4a3a; border-radius:12px; font-size:8px; color:var(--text); background:transparent; white-space:nowrap; flex-shrink:0; }
+        .pill.act { border-color:#22d3ee; color:#22d3ee; }
+        .pill.pm-pill { border-color:var(--pm-card-border); color:var(--pm); }
+        .pill-sep { color:var(--text-dim); font-size:8px; flex-shrink:0; }
+
+        /* ─── ESCALATION ─── */
+        .esc-section { position:relative; margin:16px 0 10px; }
+        .esc-endpoints { display:flex; justify-content:space-between; align-items:center; margin-bottom:0; position:relative; z-index:2; }
+        .esc-ep {
+            display:inline-block; padding:3px 10px; border:1px solid #3a3020;
+            border-radius:3px; font-family:'JetBrains Mono',monospace; font-size:8px; color:var(--p1-bright); background:var(--bg);
+        }
+        .esc-ep.right { color:var(--p1-bright); border-color:#3a3020; }
+        .esc-info {
+            background:var(--bg); border:1px solid #3a3020; border-radius:4px;
+            padding:12px 16px; font-size:9px; color:var(--text);
+            margin-bottom:0;
+        }
+        .esc-info .lbl { color:var(--p1-bright); font-weight:700; font-size:10px; margin-bottom:6px; display:block; }
+        .esc-info-row { display:flex; align-items:flex-start; gap:8px; padding:3px 0; font-size:9px; }
+        .esc-tag { display:inline-block; padding:2px 8px; border-radius:3px; font-size:8px; font-weight:600; margin:0 4px 0 0; flex-shrink:0; }
+        .esc-tag.p2t { background:#201c28; color:#c084fc; }
+        .esc-tag.pmt { background:#181c24; color:#7dd3fc; }
+        .esc-tag.hitl { background:#22201a; color:#fde047; }
+
+        /* ─── PHASE 3 (BLUE-GREEN) ─── */
+        .p3-box { background:var(--p3a-bg); border:2px solid var(--p3a-border); border-radius:8px; padding:20px; margin-bottom:16px; }
+        .p3-orch-info { background:var(--bg); border:1px solid var(--border); border-radius:4px; padding:9px 12px; font-size:8.5px; color:var(--text); margin-bottom:16px; display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+        .p3-orch-info .ylbl { font-family:'JetBrains Mono',monospace; font-size:8px; font-weight:700; color:var(--p3a-bright); letter-spacing:0.5px; }
+        .nametag { display:inline-block; padding:1px 5px; border-radius:2px; font-size:7px; font-weight:600; letter-spacing:0.3px; }
+        .nametag.amara { background:#201c28; color:#c084fc; } .nametag.clare { background:#181c24; color:#60a5fa; }
+        .nametag.hal { background:#241818; color:#f87171; } .nametag.zara { background:#1a1e18; color:#a3e635; }
+        .nametag.reese { background:#22201a; color:#fbbf24; }
+        .sub-hdr { font-family:'JetBrains Mono',monospace; font-size:8.5px; font-weight:700; color:var(--text-bright); letter-spacing:1.2px; text-transform:uppercase; margin-bottom:3px; }
+        .sub-hdr.blue { color:var(--p3a-bright); }
+        .sub-hdr.green { color:var(--p3b-bright); }
+        .sub-desc { font-size:8px; color:var(--text-dim); margin-bottom:14px; }
+        .p3a-row { display:flex; gap:10px; margin-bottom:22px; }
+        .p3a-stages { display:flex; gap:0; flex-shrink:0; align-items:center; }
+        .p3-card { flex:0 0 192px; background:var(--p3a-card-bg); border:1px solid var(--p3a-card-border); border-radius:5px; padding:10px 11px; }
+        .p3a-arrow { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:0 2px; min-width:24px; }
+        .p3a-arrow .al { width:100%; height:1px; background:var(--p3a); position:relative; opacity:0.4; }
+        .p3a-arrow .al::after { content:'›'; position:absolute; right:-4px; top:-8px; color:var(--p3a-bright); font-size:13px; opacity:0.8; }
+        .p3a-arrow .albl { font-family:'JetBrains Mono',monospace; font-size:6px; color:var(--text-dim); margin-top:3px; white-space:nowrap; }
+        .p3-card .sn { font-family:'JetBrains Mono',monospace; font-size:7px; color:var(--text-dim); letter-spacing:1.2px; text-transform:uppercase; margin-bottom:1px; }
+        .p3-card .p3-st { font-size:12.5px; font-weight:700; color:var(--text-white); margin-bottom:7px; }
+        .p3-card ul { list-style:none; } .p3-card li { font-size:9.5px; color:var(--text); padding:2px 0; }
+        .p3-card li::before { content:"• "; color:var(--p3a); }
+        .p3-card .out { font-family:'JetBrains Mono',monospace; font-size:8px; color:var(--p3a-bright); margin-top:10px; font-weight:600; }
+        .p3-card .outv { font-family:'JetBrains Mono',monospace; font-size:8.5px; color:var(--text); font-weight:400; }
+        .qg { display:flex; gap:3px; flex-wrap:wrap; margin:4px 0; }
+        .qg-label { font-family:'JetBrains Mono',monospace; font-size:6.5px; color:var(--text-dim); letter-spacing:0.5px; text-transform:uppercase; margin-top:4px; margin-bottom:2px; }
+        .gt { display:inline-block; padding:2px 5px; border-radius:3px; font-family:'JetBrains Mono',monospace; font-size:6.5px; font-weight:600; }
+        .gt.con { background:#181e1a; color:#34d399; } .gt.arf { background:#181c24; color:#60a5fa; }
+        .gt.esc { background:#1e1600; color:var(--p1-bright); } .gt.opr { background:#201c28; color:#c084fc; }
+        .trigger-box { margin-top:5px; padding:3px 6px; background:var(--bg-card); border:1px solid var(--border); border-radius:3px; font-size:7.5px; color:var(--p3a-bright); }
+
+
+        .esc-side { background:#16130a; border:1px solid #3a2e10; border-radius:5px; padding:10px 11px; }
+        .esc-side .et { font-size:10px; font-weight:700; color:var(--p1-bright); margin-bottom:7px; }
+        .esc-side h5 { font-family:'JetBrains Mono',monospace; font-size:7px; color:var(--p1); letter-spacing:0.3px; margin-bottom:3px; margin-top:5px; }
+        .esc-side ul { list-style:none; } .esc-side li { font-size:7.5px; color:var(--text); padding:1px 0; padding-left:7px; position:relative; }
+        .esc-side li::before { content:"•"; position:absolute; left:0; color:var(--p1-dim); }
+
+        /* 3B cards — Green */
+        .p3b-row { display:flex; gap:10px; margin-bottom:12px; }
+        .p3b-stages { display:flex; gap:0; flex-shrink:0; align-items:center; }
+        .p3b-card { flex:0 0 192px; background:var(--bg); border:1px solid #243830; border-radius:5px; padding:10px 11px; }
+        .p3b-card .sn { font-family:'JetBrains Mono',monospace; font-size:7px; color:var(--text-dim); letter-spacing:1.5px; text-transform:uppercase; margin-bottom:2px; }
+        .p3b-card .p3-st { font-size:12.5px; font-weight:700; color:var(--text-white); margin-bottom:7px; }
+        .p3b-card ul { list-style:none; } .p3b-card li { font-size:9.5px; color:var(--text); padding:2px 0; }
+        .p3b-card li::before { content:"• "; color:var(--p3b); }
+        .p3b-card .out { font-family:'JetBrains Mono',monospace; font-size:8px; color:var(--p3b-bright); margin-top:10px; font-weight:600; }
+        .p3b-card .outv { font-family:'JetBrains Mono',monospace; font-size:8.5px; color:var(--text); font-weight:400; }
+        .ig { display:inline-block; padding:2px 5px; border-radius:3px; font-family:'JetBrains Mono',monospace; font-size:6.5px; font-weight:600; }
+        .ig.launch { background:#181e1a; color:#4ade80; } .ig.merge { background:var(--bg-card); color:#86efac; }
+        .ig.ret { background:#181c24; color:#60a5fa; } .ig.esc { background:#1e1600; color:var(--p1-bright); }
+        .end-card { flex:1; background:var(--bg); border:2px solid var(--green); border-radius:5px; padding:8px 9px; }
+        .end-label { font-family:'JetBrains Mono',monospace; font-size:6.5px; color:var(--green); letter-spacing:1px; text-transform:uppercase; font-weight:700; margin-bottom:1px; }
+        .end-card .sn { font-family:'JetBrains Mono',monospace; font-size:7px; color:var(--text-dim); letter-spacing:1.5px; text-transform:uppercase; margin-bottom:2px; }
+        .end-card .p3-st { font-size:12.5px; font-weight:700; color:var(--text-white); margin-bottom:7px; }
+        .end-card li { font-size:9.5px; color:var(--text); padding:2px 0; } .end-card li::before { content:"• "; color:var(--green-dim); }
+        .done-line { font-family:'JetBrains Mono',monospace; font-size:7px; color:var(--green); margin-top:5px; }
+
+        .ar-side { flex:0 0 175px; display:flex; flex-direction:column; gap:6px; }
+        .ar-card { background:#0e1624; border:1px solid #1e3a5a; border-radius:5px; padding:8px 9px; }
+        .ar-card .at { font-size:10px; font-weight:700; color:var(--p3a-bright); margin-bottom:3px; }
+        .ar-card .as { font-size:7.5px; color:#4a7aaa; font-style:italic; margin-bottom:5px; }
+        .ar-card li { font-size:7.5px; color:var(--text); padding:1px 0; padding-left:7px; position:relative; }
+        .ar-card li::before { content:"•"; position:absolute; left:0; color:#3b82f6; }
+        .go-card { background:#081020; border:1px solid var(--border); border-radius:5px; padding:8px 9px; }
+        .go-card h4 { font-family:'JetBrains Mono',monospace; font-size:8px; font-weight:700; color:var(--text-bright); letter-spacing:1px; text-transform:uppercase; margin-bottom:6px; }
+        .go-row { display:flex; align-items:center; gap:6px; padding:2.5px 0; font-size:7.5px; color:var(--text); }
+        .role { display:inline-block; padding:1.5px 5px; border-radius:3px; font-size:6.5px; font-weight:600; min-width:44px; text-align:center; font-family:'JetBrains Mono',monospace; }
+        .role.pm { background:#2a2520; color:#fde047; } .role.tl { background:#201c28; color:#c084fc; }
+        .role.ag { background:#181c24; color:#7dd3fc; } .role.bt { background:var(--bg-card); color:#86efac; }
+
+        .gates-row { margin-top:8px; }
+        .gates-label { font-family:'JetBrains Mono',monospace; font-size:7px; color:var(--text-dim); letter-spacing:0.8px; text-transform:uppercase; margin-bottom:3px; }
+        .gates-bar { display:flex; border-radius:3px; overflow:hidden; }
+        .g-seg { padding:4px 8px; font-family:'JetBrains Mono',monospace; font-size:7px; display:flex; align-items:center; gap:4px; white-space:nowrap; }
+        .g-seg.gn { background:#181e1a; color:#34d399; flex:2; } .g-seg.bl { background:#181c24; color:#60a5fa; flex:2; }
+        .g-seg.rd { background:#1e1600; color:var(--p1-bright); flex:3; }
+
+        .scope-note { background:#0c1228; border-radius:4px; padding:10px 14px; margin-bottom:22px; display:flex; gap:10px; }
+        .scope-note .sn-icon { color:var(--yellow); font-size:12px; flex-shrink:0; line-height:1; }
+        .scope-note .sn-t { font-size:10px; font-weight:700; color:var(--text-bright); margin-bottom:2px; }
+        .scope-note .sn-d { font-size:8.5px; color:var(--text-dim); }
+
+        .kp { background:#0c1228; border-left:3px solid var(--p1); border-radius:4px; padding:12px 16px; margin-bottom:14px; display:flex; align-items:flex-start; gap:16px; }
+        .kp-badge { font-family:'JetBrains Mono',monospace; font-size:7.5px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--p1-bright); white-space:nowrap; flex-shrink:0; padding-top:1px; }
+        .kp-text { font-size:9.5px; color:var(--text); line-height:1.65; }
+
+        .footer { display:flex; align-items:center; gap:6px; flex-wrap:wrap; padding-top:6px; }
+        .fp-tag { display:inline-block; padding:3px 9px; border-radius:3px; font-family:'JetBrains Mono',monospace; font-size:7px; font-weight:600; letter-spacing:0.3px; }
+        .fp-tag.t1 { background:#2a2520; color:#fde047; } .fp-tag.t2 { background:#201c28; color:#c084fc; }
+        .fp-tag.tm { background:#181c24; color:#7dd3fc; }
+        .fp-tag.t3a { background:#181c24; color:#60a5fa; } .fp-tag.t3b { background:#181e1a; color:#86efac; }
+        .fg-tag { display:inline-block; padding:3px 8px; border-radius:10px; font-family:'JetBrains Mono',monospace; font-size:7px; font-weight:600; }
+        .fg-tag.c { background:#181e1a; color:#34d399; } .fg-tag.a { background:#181c24; color:#60a5fa; }
+        .fg-tag.e { background:#1e1600; color:var(--p1-bright); }
+        .footer-ver { margin-left:auto; font-family:'JetBrains Mono',monospace; font-size:7.5px; color:var(--text-dim); }
+
+        /* ─── LIGHT MODE ─── */
+        body.light {
+            --bg: #f8f8fc;
+            --bg-card: #ffffff;
+            --bg-container: #f0f0f6;
+            --border: #d4d4dc;
+            --border-bright: #b8b8c8;
+            --text: #4a4f5e;
+            --text-mid: #333744;
+            --text-bright: #1a1d28;
+            --text-white: #0d0f18;
+            --text-dim: #8a8f9a;
+
+            --p1: #d97706; --p1-bright: #b45309; --p1-dim: #92400e;
+            --p1-bg: #fffbeb; --p1-border: #c8920a; --p1-card-bg: #fff;
+            --p1-card-border: #e8d090; --p1-badge-bg: #fef3c7; --p1-badge-text: #92400e;
+
+            --p2: #7c3aed; --p2-bright: #6d28d9; --p2-dim: #4c1d95;
+            --p2-bg: #f5f3ff; --p2-border: #8b5cf6; --p2-card-bg: #fff;
+            --p2-card-border: #c4b5fd; --p2-badge-bg: #ede9fe; --p2-badge-text: #4c1d95;
+
+            --p3a: #1d4ed8; --p3a-bright: #1e40af;
+            --p3a-bg: #eff6ff; --p3a-border: #3b82f6; --p3a-card-bg: #fff; --p3a-card-border: #bfdbfe;
+
+            --p3b: #059669; --p3b-bright: #047857;
+            --p3b-bg: #ecfdf5; --p3b-border: #34d399;
+
+            --pm: #0284c7; --pm-bright: #0369a1;
+            --pm-bg: #f0f9ff; --pm-border: #38bdf8; --pm-card-bg: #fff;
+            --pm-card-border: #bae6fd; --pm-badge-bg: #e0f2fe; --pm-badge-text: #0369a1;
+
+            --cyan: #0891b2; --green: #059669; --green-bright: #047857; --green-dim: #d1fae5;
+            --orange: #d97706;
+        }
+
+        body.light .p3-box { background:var(--p3a-bg); }
+        body.light .p1-box { background:var(--p1-bg); }
+        body.light .p2-box { background:var(--p2-bg); }
+        body.light .pm-box { background:var(--pm-bg); }
+        body.light .s1-card { background:#fff; }
+        body.light .art-card { background:#fff; }
+        body.light .spec-card { background:#fff; }
+        body.light .trans-card { background:#fff; }
+        body.light .pm-stage { background:#fff; }
+        body.light .pm-hitl-gate { background:#fff; }
+        body.light .pm-trans-card { background:#fff; }
+        body.light .p3-card { background:#fff; }
+        body.light .p3b-card { background:#fff; }
+        body.light .esc-side { background:#fffbeb; border-color:#e8d090; }
+        body.light .ar-card { background:#eff6ff; border-color:#bfdbfe; }
+        body.light .go-card { background:#f8fafc; border-color:var(--border); }
+        body.light .owner-badge { background:#f5f3ff; }
+        body.light .gate-badge { background:#f5f3ff; }
+        body.light .p3-orch-info { background:#fff; }
+        body.light .orch-bar, body.light .orch { background:#f0f9ff; border-color:#bae6fd; }
+        body.light .scope-note { background:#f0f9ff; }
+        body.light .kp { background:#f0f9ff; }
+        body.light .footer { border-top:1px solid var(--border); padding-top:10px; }
+        body.light .fp-tag.t1 { background:#fef3c7; color:#92400e; }
+        body.light .fp-tag.t2 { background:#ede9fe; color:#4c1d95; }
+        body.light .fp-tag.tm { background:#e0f2fe; color:#0369a1; }
+        body.light .fp-tag.t3a { background:#dbeafe; color:#1e40af; }
+        body.light .fp-tag.t3b { background:#d1fae5; color:#047857; }
+        body.light .fg-tag.c { background:#d1fae5; color:#047857; }
+        body.light .fg-tag.a { background:#dbeafe; color:#1e40af; }
+        body.light .fg-tag.e { background:#fef3c7; color:#92400e; }
+        body.light .gt.con { background:#d1fae5; color:#047857; }
+        body.light .gt.arf { background:#dbeafe; color:#1e40af; }
+        body.light .gt.esc { background:#fef3c7; color:#92400e; }
+        body.light .gt.opr { background:#ede9fe; color:#4c1d95; }
+        body.light .ig.launch { background:#d1fae5; color:#047857; }
+        body.light .ig.merge { background:#f0fdf4; color:#059669; }
+        body.light .ig.ret { background:#dbeafe; color:#1e40af; }
+        body.light .ig.esc { background:#fef3c7; color:#92400e; }
+        body.light .g-seg.gn { background:#d1fae5; color:#047857; }
+        body.light .g-seg.bl { background:#dbeafe; color:#1e40af; }
+        body.light .g-seg.rd { background:#fef3c7; color:#92400e; }
+        body.light .nametag.amara { background:#ede9fe; color:#4c1d95; }
+        body.light .nametag.clare { background:#dbeafe; color:#1e40af; }
+        body.light .nametag.hal { background:#fee2e2; color:#b91c1c; }
+        body.light .nametag.zara { background:#d1fae5; color:#047857; }
+        body.light .nametag.reese { background:#fef3c7; color:#92400e; }
+        body.light .role.pm { background:#fef3c7; color:#92400e; }
+        body.light .role.tl { background:#ede9fe; color:#4c1d95; }
+        body.light .role.ag { background:#e0f2fe; color:#0369a1; }
+        body.light .role.bt { background:#d1fae5; color:#047857; }
+        body.light .ftag.core { background:#f5f5ff; border-color:#c4b5fd; color:#4c1d95; }
+        body.light .ftag.ext { background:#f8f8fc; border-color:#d4d4dc; color:#4a4f5e; }
+        body.light .ftag.hl { background:#fffbeb; border-color:#e8d090; color:#92400e; }
+        body.light .pm-scan-tag.qodana { background:#fff7ed; border-color:#fed7aa; color:#c2410c; }
+        body.light .pm-scan-tag.snyk { background:#f0fdf4; border-color:#bbf7d0; color:#166534; }
+        body.light .pm-scan-tag.sonar { background:#f0f9ff; border-color:#bae6fd; color:#0369a1; }
+        body.light .pm-scan-tag.custom { background:#fffbeb; border-color:#fde68a; color:#92400e; }
+        body.light .pill { border-color:#c0d8e8; color:#334155; }
+        body.light .pill.act { border-color:#0891b2; color:#0891b2; }
+        body.light .trigger-box { background:#f0f9ff; border-color:#bae6fd; color:#0369a1; }
+        body.light .conv-btn { background:#fff; border-color:#e8d090; color:#b45309; }
+        body.light .trans-label { background:var(--p2-bg); }
+        body.light .pm-trans-label { background:var(--pm-bg); }
+        body.light .p2-hc-dot { background:var(--p2-bg); }
+
+        /* Toggle button */
+        .mode-toggle {
+            position:fixed; top:16px; right:20px; z-index:1000;
+            display:flex; align-items:center; gap:8px;
+            background:var(--bg-card); border:1px solid var(--border);
+            border-radius:20px; padding:5px 12px 5px 8px;
+            cursor:pointer; font-family:'JetBrains Mono',monospace;
+            font-size:8px; color:var(--text-dim); letter-spacing:1px;
+            text-transform:uppercase; transition:all 0.2s;
+            box-shadow:0 2px 8px rgba(0,0,0,0.15);
+        }
+        .mode-toggle:hover { color:var(--text-bright); border-color:var(--border-bright); }
+        .toggle-icon { font-size:13px; }
+
+
+        /* ─── LIGHT MODE HARDCODED OVERRIDES ─── */
+        body.light .badge.p3 { background:#dbeafe; color:#1e40af; }
+        body.light .stage-icon.pencil { background:#fef3c7; }
+        body.light .conv-btn .cb-icon { background:#fef3c7; }
+        body.light .art-title .art-ico { background:#ede9fe; }
+        body.light .plan-t .plan-ico { background:#ede9fe; }
+        body.light .owner-badge { background:#f5f3ff; }
+        body.light .gate-badge { background:#f5f3ff; }
+        body.light .esc-tag.p2t { background:#ede9fe; color:#4c1d95; }
+        body.light .esc-tag.pmt { background:#e0f2fe; color:#0369a1; }
+        body.light .esc-tag.hitl { background:#fef3c7; color:#92400e; }
+        body.light .orch-dot { background:#0891b2; }
+        body.light .pill.act { border-color:#0891b2; color:#0891b2; }
+        body.light .esc-ep { background:#fff; border-color:#e8d090; color:#b45309; }
+        body.light .esc-side { background:#fffbeb; border-color:#e8d090; }
+        body.light .ar-card .as { color:#3b6ea8; }
+        body.light .go-card { background:#f8fafc; }
+        body.light .role.tl { background:#ede9fe; color:#4c1d95; }
+        body.light .p3-orch-info { background:#fff; border-color:var(--border); }
+        body.light .risk-high { background:#fff5f5; border-color:#fca5a5; }
+        body.light .risk-high-badge { background:#fee2e2; color:#b91c1c; }
+        body.light .risk-high-effect { background:#fef2f2; color:#b91c1c; }
+
+    </style>
+</head>
+<body>
+<div class="page">
+
+    <div class="hdr-meta">AGENTIC PLATFORM · V1.1 · MARCH 2026</div>
+    <div class="hdr-title">Governed Agentic Delivery Model</div>
+    <div style="font-size:13px;color:var(--text-bright);margin-bottom:8px;font-weight:400;letter-spacing:-0.1px;">Spec-Kit-driven delivery with HITL checkpoints before and after autonomous execution</div>
+    <div class="hdr-desc">
+        Three distinct phases with explicit handoffs · <span class="hl-o">Planning Agent + HITL</span> shapes meaning →
+        <span class="fw600" style="color:var(--p2-bright);">Tech Design via github/spec-kit + FeatureOutlook</span> produces execution-safe artifacts →
+        <span style="color:var(--p3a-bright);">Autonomous Execution</span> builds and ships ·
+        <span style="color:var(--pm);">Maintenance Agent</span> runs in parallel
+    </div>
+
+    <div class="main-grid">
+
+        <!-- LEFT COLUMN -->
+        <div class="g-left">
+            <div class="p1-box">
+                <div class="phase-hdr">
+                    <div><span class="badge p1">PHASE 1 · PLANNING AGENT + HITL</span><div class="phase-sub">• HITL — HUMANS GOVERN</div></div>
+                    <div class="section-right">Product · meaning is still being shaped</div>
+                </div>
+                <div class="stages">
+                    <div class="s1-card">
+                        <div class="src-label">SOURCES</div>
+                        <div class="stage-t"><span class="stage-icon">🔍</span> Discovery</div>
+                        <div style="display:flex;flex-direction:column;gap:3px;margin-top:6px;">
+                            <div class="src-item"><span class="src-dot"></span><span class="src-tag">Collaboration Tools</span></div>
+                            <div class="src-item"><span class="src-dot"></span><span class="src-tag">Documentation Systems</span></div>
+                            <div class="src-item"><span class="src-dot"></span><span class="src-tag">Issue Trackers</span></div>
+                        </div>
+                    </div>
+                    <div class="arrow-col"><div class="arrow-line"></div><div class="arrow-lbl">distill</div></div>
+                    <div class="s1-card">
+                        <div class="stage-num">STAGE 01</div>
+                        <div class="stage-t"><span class="stage-icon">⚙️</span> Feature Intake</div>
+                        <ul><li><span class="bul">•</span> Distill from raw context</li><li><span class="bul">•</span> Extract intent signals</li><li><span class="bul">•</span> Detect duplicates</li></ul>
+                        <div class="out-label">Output: <span class="out-val">feature.md</span></div>
+                    </div>
+                    <div class="arrow-col"><div class="arrow-line"></div><div class="arrow-lbl">feature.md</div></div>
+                    <div class="s1-card">
+                        <div class="stage-num">STAGE 02</div>
+                        <div class="stage-t"><span class="stage-icon pencil">✏️</span> Specify</div>
+                        <ul><li><span class="bul">•</span> Agent surfaces gaps</li><li><span class="bul">•</span> Human refines scope</li><li><span class="bul">•</span> Confirms boundaries</li></ul>
+                        <div class="out-label">Output: <span class="out-val">specified feature.md</span></div>
+                    </div>
+                    <div class="arrow-col"><div class="arrow-line"></div><div class="arrow-lbl">draft</div></div>
+                    <div class="s1-card">
+                        <div class="stage-num">STAGE 03</div>
+                        <div class="stage-t"><span class="stage-icon">💬</span> Clarify</div>
+                        <ul><li><span class="bul">•</span> Agent asks questions</li><li><span class="bul">•</span> Human answers inline</li><li><span class="bul">•</span> Ambiguities resolved</li></ul>
+                        <div class="out-label">Output: <span class="out-val">clarified feature.md</span></div>
+                        <div class="conv-btn"><span class="cb-icon">⚙️</span> registers job with Orchestrator</div>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Handoff bar: P1 → P2 -->
+            <div style="display:flex;align-items:center;gap:12px;background:var(--p1-bg);border-radius:6px;padding:10px 16px;">
+                <div style="font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;color:var(--p1-bright);letter-spacing:1.5px;text-transform:uppercase;white-space:nowrap;">HANDOFF → TECH DESIGN</div>
+                <div style="width:1px;height:18px;background:var(--p1-card-border);flex-shrink:0;"></div>
+                <div style="font-size:8.5px;color:var(--text-bright);">curated feature.md passed to VS Code / FeatureOutlook</div>
+                <div style="margin-left:auto;display:inline-block;padding:2px 9px;background:var(--bg-card);border:1px solid var(--p1-card-border);border-radius:3px;font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--p1-bright);">feature.md</div>
+            </div>
+            <div class="p2-box">
+                <div class="phase-hdr">
+                    <div><span class="badge p2">PHASE 2 · TECH DESIGN</span><div class="phase-sub">🔧 VS CODE · BUILT ON <span style="color:var(--p2-bright);">github/spec-kit</span> · EXTENDED BY <span style="color:var(--p2-bright);">FEATUREOUTLOOK</span> — HUMAN-LED, AGENT-ASSISTED</div></div>
+                    <div class="section-right">Tech Design Team + Specialists · FeatureOutlook + spec-kit · produces execution-safe artifacts</div>
+                </div>
+                <!-- spec-kit foundation strip -->
+                <div style="display:flex;align-items:center;gap:10px;background:var(--p2-card-bg);border:1px solid var(--p2-card-border);border-radius:5px;padding:7px 12px;margin-bottom:12px;">
+                    <span style="font-size:10px;">🐙</span>
+                    <span style="font-family:'JetBrains Mono',monospace;font-size:7.5px;font-weight:700;color:var(--p2-bright);letter-spacing:1.5px;text-transform:uppercase;">FOUNDATION</span>
+                    <span style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--text-bright);">github/spec-kit</span>
+                    <span style="font-size:8px;color:var(--text-dim);">· spec-driven templates · extensions model · specify CLI · devcontainer base</span>
+                    <div style="margin-left:auto;display:flex;gap:6px;align-items:center;"><span style="font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--text-dim);">extended by</span><span style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--p2-bright);font-weight:700;">FeatureOutlook</span><span style="font-size:7px;color:var(--text-dim);">— internal VS Code extension for review + sign-off</span></div>
+                </div>
+                <div class="p2-flow">
+                    <div class="p2-col-left">
+                        <div class="art-card">
+                            <div class="art-label">STAGE 04a · Tech Design</div>
+                            <div class="art-title"><span class="art-ico">📄</span> Core Artifacts</div>
+                            <div class="fi-pill"><span class="fi-dot"></span> feature.md — curated</div>
+                            <div class="fi-pill"><span class="fi-dot"></span> acceptance-criteria.md</div>
+                            <div class="fi-pill"><span class="fi-dot"></span> architecture.md</div>
+                            <div class="owner-badge"><span class="ob-label">Approver:</span> <span class="ob-val">Tech Lead · Architect</span></div>
+                        </div>
+                        <div class="art-card">
+                            <div class="art-label">STAGE 04b · Specialists</div>
+                            <div class="art-title"><span class="art-ico">🎨</span> UX + QA Artifacts</div>
+                            <div class="fi-pill"><span class="fi-dot"></span> ux.md</div>
+                            <div class="fi-pill"><span class="fi-dot"></span> qa-tests.md</div>
+                            <div class="owner-badge"><span class="ob-label">Owner:</span> <span class="ob-val">UX Designer · QA Engineer</span></div>
+                        </div>
+                    </div>
+                    <div class="p2-horiz-conn">
+                        <div class="p2-hc-wrap">
+                            <span class="p2-hc-dot"></span>
+                            <span class="p2-hc-line"></span>
+                            <span class="p2-hc-arrow">›</span>
+                            <span class="p2-hc-dot"></span>
+                        </div>
+                        <div class="p2-hc-lbl">converge</div>
+                    </div>
+                    <div class="p2-col-mid">
+                        <div class="spec-card">
+                            <div class="art-label">STAGE 05</div>
+                            <div class="st"><span class="chk">✅</span> Spec Review</div>
+                            <div class="chk-pill"><span class="chk-dot"></span> Criteria testable?</div>
+                            <div class="chk-pill"><span class="chk-dot"></span> UX intent clear?</div>
+                            <div class="chk-pill"><span class="chk-dot"></span> Arch aligned?</div>
+                            <div class="chk-pill"><span class="chk-dot"></span> QA coverage complete?</div>
+                            <div style="border-top:1px solid var(--p2-card-border);margin:8px 0 6px;"></div>
+                            <div style="font-family:'JetBrains Mono',monospace;font-size:6.5px;color:var(--text-dim);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:5px;">NFR Review · required for execution-safe artifact</div>
+                            <div style="display:flex;flex-wrap:wrap;gap:3px;">
+                                <span style="padding:2px 6px;background:var(--p2-badge-bg);border-radius:3px;font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--p2-bright);">Security</span> <span style="color:var(--text-dim);font-size:7px;">•</span> <span style="padding:2px 6px;background:var(--p2-badge-bg);border-radius:3px;font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--p2-bright);">Observability</span> <span style="color:var(--text-dim);font-size:7px;">•</span> <span style="padding:2px 6px;background:var(--p2-badge-bg);border-radius:3px;font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--p2-bright);">Performance</span> <span style="color:var(--text-dim);font-size:7px;">•</span> <span style="padding:2px 6px;background:var(--p2-badge-bg);border-radius:3px;font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--p2-bright);">Accessibility</span> <span style="color:var(--text-dim);font-size:7px;">•</span> <span style="padding:2px 6px;background:var(--p2-badge-bg);border-radius:3px;font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--p2-bright);">Data/Privacy</span>
+                            </div>
+                            <div class="owner-badge"><span class="ob-label">Approver:</span> <span class="ob-val">Tech Lead · Architect</span></div>
+                        </div>
+                    </div>
+                    <div class="p2-horiz-conn">
+                        <div class="p2-hc-wrap">
+                            <span class="p2-hc-dot"></span>
+                            <span class="p2-hc-line"></span>
+                            <span class="p2-hc-arrow">›</span>
+                            <span class="p2-hc-dot"></span>
+                        </div>
+                        <div class="p2-hc-lbl">approved</div>
+                    </div>
+                    <div class="p2-col-right">
+                        <div class="trans-card">
+                            <div class="trans-label">TRANSITION ARTIFACT</div>
+                            <div class="art-label">STAGE 06</div>
+                            <div class="plan-t"><span class="plan-ico">📋</span> plan.md</div>
+                            <div class="plan-pill"><span class="pp-dot"></span> System design defined</div>
+                            <div class="plan-pill"><span class="pp-dot"></span> Tasks scoped per repo</div>
+                            <div class="plan-pill"><span class="pp-dot"></span> Arch boundary set</div>
+                            <div class="plan-pill"><span class="pp-dot"></span> Architect sign-off</div>
+                            <div class="gate-badge"><span class="gb-label">Gate:</span> <span class="gb-val">Architect approves via FeatureOutlook · PR merge triggers Orchestrator</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FeatureOutlook Extension Model inside Phase 2 -->
+                <div style="border-top:1px solid var(--p2-border);margin-top:16px;padding-top:14px;">
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+                        <span style="font-size:12px;">🧩</span>
+                        <span style="font-family:'JetBrains Mono',monospace;font-size:8.5px;font-weight:700;color:var(--p2-bright);letter-spacing:1.5px;text-transform:uppercase;">FEATUREOUTLOOK EXTENSION MODEL</span>
+                        <span style="font-size:8px;color:var(--text-dim);">· extends github/spec-kit extensions/ · conditional artifacts by feature type</span>
+                    </div>
+                    <div class="sk-grid">
+                        <div class="sk-col"><h4>Core — required for all features</h4><div><span class="ftag core">feature.md</span><span class="ftag core">acceptance-criteria.md</span><span class="ftag core">architecture.md</span><span class="ftag core">ux.md</span><span class="ftag core">qa-tests.md</span></div><div class="sk-note">These exist for all artifacts automatically — no code change, just a schema entry in the manifest</div></div>
+                        <div class="sk-col"><h4>Conditional by feature type</h4><div class="cond-row"><span class="k">api-change</span> → integration.md + security.md</div><div class="cond-row"><span class="k">ui-component</span> → ux.md + accessibility.md</div><div class="cond-row"><span class="k">data-migration</span> → migration.md + performance.md</div><div class="cond-row"><span class="k">infra-change</span> → observability.md + security.md</div></div>
+                        <div class="sk-col"><h4>Extension candidates</h4><div class="ext-grid"><span class="ftag ext">security.md</span><span class="ftag ext">integration.md</span><span class="ftag ext">performance.md</span><span class="ftag ext">accessibility.md</span><span class="ftag ext">migration.md</span><span class="ftag ext">observability.md</span><span class="ftag hl">ops.md</span><span class="ftag ext">change-control.md</span></div><div class="sk-note">+ others — org specific</div></div>
+                    </div>
+                </div>
+            </div>
+        </div><!-- /g-left -->
+
+        <!-- PHASE M -->
+        <div class="g-pm">
+            <div class="pm-box">
+                <div style="margin-bottom:10px;">
+                    <span class="badge pm">PHASE M · MAINTENANCE AGENT</span>
+                    <div class="phase-sub">🔄 SCHEDULED · AGENT-DRIVEN · HITL GATED · <span style="color:var(--pm-bright);">SPEC-KIT WRAPPED</span></div>
+                </div>
+                <!-- spec-kit strip in Phase M -->
+                <div style="display:flex;align-items:center;gap:10px;background:var(--pm-card-bg);border:1px solid var(--pm-card-border);border-radius:5px;padding:7px 12px;margin-bottom:10px;">
+                    <span style="font-size:10px;">🐙</span>
+                    <span style="font-family:'JetBrains Mono',monospace;font-size:7.5px;font-weight:700;color:var(--pm-bright);letter-spacing:1.5px;text-transform:uppercase;">SPEC-KIT</span>
+                    <span style="font-size:8px;color:var(--text-dim);">maintenance preset · acceptance-criteria + qa-tests · no ux.md</span>
+                </div>
+                <div class="pm-stage">
+                    <div class="sn">STAGE M1</div>
+                    <div class="st">🕐 Scheduled Scan</div>
+                    <ul><li><span class="bul">•</span> Cron-triggered agent run</li><li><span class="bul">•</span> Kicks off all scanners</li><li><span class="bul">•</span> Collects unified report</li></ul>
+                    <div style="margin-top:5px;display:flex;gap:4px;flex-wrap:wrap;"><span style="font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--pm-bright);background:var(--pm-badge-bg);border-radius:3px;padding:2px 7px;">Weekly cadence</span><span style="font-family:'JetBrains Mono',monospace;font-size:7px;color:#f87171;background:#1e0a0a;border-radius:3px;padding:2px 7px;">Critical: 48h fix SLA</span><span style="font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--text-dim);background:var(--bg-card);border-radius:3px;padding:2px 7px;">High: 5d · Medium: next sprint</span></div>
+                    <div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:3px;"><span class="pm-scan-tag qodana">Qodana</span><span class="pm-scan-tag snyk">Snyk</span><span class="pm-scan-tag sonar">SonarQube</span><span class="pm-scan-tag custom">Convention Analyzer</span></div>
+                    <div class="out">Output: <span class="outv">scan-report.json</span></div>
+                </div>
+                <div class="pm-arrow"><span class="arr">↓</span></div>
+                <div class="pm-stage">
+                    <div class="sn">STAGE M2</div>
+                    <div class="st">🎯 Triage & Prioritize</div>
+                    <ul><li><span class="bul">•</span> Severity scoring</li><li><span class="bul">•</span> Dedup across scanners</li><li><span class="bul">•</span> Group by repo / module</li><li><span class="bul">•</span> Rank by impact + complexity</li><li><span class="bul">•</span> Generates spec-kit artifact bundle</li></ul>
+                    <div class="out">Output: <span class="outv">spec-kit bundle · maintenance preset</span></div>
+                </div>
+                <div class="pm-arrow"><span class="arr">↓</span></div>
+                <div class="pm-hitl-gate">
+                    <div class="sn" style="font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--text-dim);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:2px;">STAGE M3</div>
+                    <div class="gate-title">🛡️ Maintenance Approval Gate</div>
+                    <ul><li><span class="bul">•</span> Review bundle in FeatureOutlook</li><li><span class="bul">•</span> Approve / reject individual fixes</li><li><span class="bul">•</span> Set scope boundaries</li><li><span class="bul">•</span> Confirm no feature conflicts</li></ul>
+                    <div style="margin-top:8px;"><div class="gate-badge"><span class="gb-label">Gate:</span> <span class="gb-val">Human sign-off required before autonomous dispatch</span></div></div>
+                </div>
+                <div class="pm-arrow"><span class="arr">↓</span></div>
+                <div class="pm-trans-card">
+                    <div class="pm-trans-label">TRANSITION ARTIFACT</div>
+                    <div class="pm-stage" style="border:none;padding:0;margin:0;background:transparent;">
+                        <div class="sn">STAGE M4</div>
+                        <div class="st"><span class="plan-ico" style="background:var(--pm-card-border);">📋</span> maintenance-plan.md</div>
+                        <ul><li><span class="bul">•</span> Bug fix specs per issue</li><li><span class="bul">•</span> Dependency upgrade paths</li><li><span class="bul">•</span> Library migration steps</li><li><span class="bul">•</span> Convention violation fixes</li></ul>
+                        <div style="margin:6px 0 4px;display:flex;gap:4px;flex-wrap:wrap;"><span class="pm-scan-tag sonar">acceptance-criteria.md</span><span class="pm-scan-tag snyk">qa-tests.md</span></div>
+                        <div class="gate-badge" style="background:var(--pm-bg);"><span class="gb-label">Output:</span> <span class="gb-val">spec-kit validated bundle · Dispatches to Phase 3</span></div>
+                        <div style="margin-top:10px;display:flex;align-items:center;gap:8px;padding:6px 8px;background:var(--pm-badge-bg);border:1px solid var(--pm-card-border);border-radius:4px;">
+                            <span style="font-size:10px;">↓</span>
+                            <span style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--pm);font-weight:600;">FEEDS INTO PHASE 3</span>
+                            <span style="font-size:7.5px;color:var(--text-dim);">via Orchestrator · same execution pipeline</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- HANDOFF → AUTONOMOUS EXECUTION -->
+        <div class="g-full">
+            <div style="border-radius:8px;overflow:hidden;margin:4px 0;background:var(--bg-container);">
+
+                <!-- Row 1: Title + Convergence sources -->
+                <div style="background:var(--bg-container);border-bottom:1px solid var(--border);padding:11px 18px;display:flex;align-items:center;gap:20px;">
+                    <div style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;color:var(--p3a);letter-spacing:2px;text-transform:uppercase;white-space:nowrap;">HANDOFF → AUTONOMOUS EXECUTION</div>
+                    <div style="width:1px;height:20px;background:var(--border);flex-shrink:0;"></div>
+                    <div style="display:flex;align-items:center;gap:10px;font-family:'JetBrains Mono',monospace;font-size:8px;">
+                        <span style="width:6px;height:6px;border-radius:50%;background:var(--p2-bright);display:inline-block;flex-shrink:0;"></span>
+                        <span style="color:var(--p2-bright);">Phase 2</span>
+                        <span style="color:var(--text-dim);">plan.md</span>
+                        <span style="color:var(--text-dim);padding:0 4px;">+</span>
+                        <span style="width:6px;height:6px;border-radius:50%;background:var(--pm);display:inline-block;flex-shrink:0;"></span>
+                        <span style="color:var(--pm);">Phase M</span>
+                        <span style="color:var(--text-dim);">maintenance-plan.md</span>
+                    </div>
+                    <div style="color:var(--text-dim);font-size:12px;">→</div>
+                    <div style="font-size:8.5px;color:var(--text-dim);">Both pipelines converge on approval · Orchestrator consumes either artifact package</div>
+                </div>
+
+                <!-- Row 2: Orchestrator -->
+                <div style="background:var(--bg-container);border-bottom:1px solid var(--border);padding:11px 18px;display:flex;align-items:center;gap:14px;">
+                    <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+                        <span style="width:8px;height:8px;border-radius:50%;background:var(--cyan);display:inline-block;"></span>
+                        <span style="font-family:'JetBrains Mono',monospace;font-size:9.5px;font-weight:700;color:var(--text-white);letter-spacing:1.2px;text-transform:uppercase;">ORCHESTRATOR</span>
+                    </div>
+                    <div style="width:1px;height:20px;background:var(--pm-card-border);flex-shrink:0;"></div>
+                    <div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap;">
+                        <span class="pill">artifact approved</span>
+                        <span class="pill-sep">→</span>
+                        <span class="pill act">dispatches Phase 3</span>
+                        <span class="pill-sep">·</span>
+                        <span class="pill">tracks task state</span>
+                        <span class="pill-sep">·</span>
+                        <span class="pill">monitors retry depth</span>
+                        <span class="pill-sep">·</span>
+                        <span class="pill">collects PR refs</span>
+                        <span class="pill-sep">·</span>
+                        <span class="pill">triggers 3b on all PRs ready</span>
+                        <span class="pill-sep">·</span>
+                        <span class="pill">enforces quality gates</span>
+                        <span class="pill-sep">·</span>
+                        <span class="pill">routes escalations</span>
+                    </div>
+                </div>
+                <div style="padding:6px 18px 10px;display:flex;align-items:center;gap:6px;">
+                    <span style="font-size:9px;">🗒️</span>
+                    <span style="font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--text-dim);letter-spacing:0.5px;">AUDIT TRAIL</span>
+                    <span style="width:1px;height:10px;background:var(--border);flex-shrink:0;"></span>
+                    <span style="font-size:8px;color:var(--text-dim);">Approvals · retries · PR refs · escalations logged</span>
+                </div>
+
+                <!-- Row 3: Escalation Return Paths -->
+                <div style="background:var(--bg-container);border-bottom:1px solid var(--border);padding:12px 18px;">
+                    <div style="font-family:'JetBrains Mono',monospace;font-size:7.5px;font-weight:700;color:var(--p1-bright);letter-spacing:1.8px;text-transform:uppercase;margin-bottom:10px;">◆ ESCALATION RETURN PATHS</div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+                        <div style="background:var(--bg-card);border-radius:5px;padding:10px 12px;">
+                            <div style="display:inline-block;padding:2px 9px;background:var(--p2-badge-bg);border-radius:3px;font-family:'JetBrains Mono',monospace;font-size:7.5px;font-weight:700;color:var(--p2-bright);margin-bottom:7px;">→ Phase 2 · Tech Design</div>
+                            <div style="font-size:8.5px;color:var(--text);line-height:1.55;">Orchestrator flags blocker · Tech Design team resolves in VS Code / FeatureOutlook · updated artifacts re-trigger Phase 3</div>
+                        </div>
+                        <div style="background:var(--bg-card);border-radius:5px;padding:10px 12px;">
+                            <div style="display:inline-block;padding:2px 9px;background:var(--pm-badge-bg);border-radius:3px;font-family:'JetBrains Mono',monospace;font-size:7.5px;font-weight:700;color:var(--pm-bright);margin-bottom:7px;">→ Phase M · Maintenance</div>
+                            <div style="font-size:8.5px;color:var(--text);line-height:1.55;">Maintenance issue requires re-triage or human re-assessment before re-dispatch</div>
+                        </div>
+                        <div style="background:var(--bg-card);border-radius:5px;padding:10px 12px;">
+                            <div style="display:inline-block;padding:2px 9px;background:var(--p1-badge-bg);border-radius:3px;font-family:'JetBrains Mono',monospace;font-size:7.5px;font-weight:700;color:var(--p1-bright);margin-bottom:7px;">→ HITL Inline</div>
+                            <div style="font-size:8.5px;color:var(--text);line-height:1.55;">Developer resolves directly in workspace · patches gap without returning to Phase 2 · low-risk ambiguity only</div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Row 4: Risk Tier Assessment -->
+                <div style="background:var(--bg-container);border-top:1px solid var(--border);padding:12px 18px;">
+                    <div style="font-family:'JetBrains Mono',monospace;font-size:7.5px;font-weight:700;color:var(--text-bright);letter-spacing:1.8px;text-transform:uppercase;margin-bottom:10px;">◆ RISK TIER ASSIGNED <span style="font-weight:400;color:var(--text-dim);letter-spacing:0.5px;font-size:7px;text-transform:none;">Low / Medium / High · determines autonomy level + review depth</span></div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+
+                        <!-- LOW -->
+                        <div style="border-radius:6px;padding:12px 14px;background:var(--p3b-bg);">
+                            <div style="display:inline-block;padding:3px 12px;background:#181e1a;border-radius:10px;font-family:'JetBrains Mono',monospace;font-size:8px;font-weight:700;color:var(--p3b-bright);margin-bottom:10px;">● LOW</div>
+                            <div style="display:flex;flex-direction:column;gap:5px;">
+                                <div style="font-size:9px;color:var(--text);"><span style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.8px;">Use for</span> · isolated low-risk repo work · no customer-facing or security surface</div>
+                                <div style="font-size:9px;color:var(--text);"><span style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.8px;">Oversight</span> · standard quality gates · normal preview window</div>
+                                <div style="font-size:9px;color:var(--p3b-bright);font-family:'JetBrains Mono',monospace;"><span style="color:var(--text-dim);font-size:7.5px;text-transform:uppercase;letter-spacing:0.8px;">Execution rule</span> · autonomous execution allowed</div>
+                            </div>
+                        </div>
+
+                        <!-- MEDIUM -->
+                        <div style="border-radius:6px;padding:12px 14px;background:var(--p1-bg);">
+                            <div style="display:inline-block;padding:3px 12px;background:var(--p1-badge-bg);border-radius:10px;font-family:'JetBrains Mono',monospace;font-size:8px;font-weight:700;color:var(--p1-bright);margin-bottom:10px;">● MEDIUM</div>
+                            <div style="display:flex;flex-direction:column;gap:5px;">
+                                <div style="font-size:9px;color:var(--text);"><span style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.8px;">Use for</span> · cross-service changes · shared libraries · moderate customer impact</div>
+                                <div style="font-size:9px;color:var(--text);"><span style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.8px;">Oversight</span> · extra reviewer assigned · stronger E2E gate · extended preview</div>
+                                <div style="font-size:9px;color:var(--p1-bright);font-family:'JetBrains Mono',monospace;"><span style="color:var(--text-dim);font-size:7.5px;text-transform:uppercase;letter-spacing:0.8px;">Execution rule</span> · autonomous with elevated review depth</div>
+                            </div>
+                        </div>
+
+                        <!-- HIGH -->
+                        <div style="border-radius:6px;padding:12px 14px;background:#1a0a0a;">
+                            <div style="display:inline-block;padding:3px 12px;background:#2a0a0a;border-radius:10px;font-family:'JetBrains Mono',monospace;font-size:8px;font-weight:700;color:#f87171;margin-bottom:10px;">● HIGH</div>
+                            <div style="display:flex;flex-direction:column;gap:5px;">
+                                <div style="font-size:9px;color:var(--text);"><span style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.8px;">Use for</span> · payments path · auth surface · production schema change · data exposure</div>
+                                <div style="font-size:9px;color:var(--text);"><span style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.8px;">Oversight</span> · architect + tech lead sign-off required</div>
+                                <div style="font-size:9px;color:#f87171;font-family:'JetBrains Mono',monospace;"><span style="color:var(--text-dim);font-size:7.5px;text-transform:uppercase;letter-spacing:0.8px;">Execution rule</span> · autonomous execution blocked pending human approval</div>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div style="margin-top:10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                        <div style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;">Scored on:</div>
+                        <span style="padding:2px 8px;background:var(--bg-card);border-radius:3px;font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--text);">repo criticality</span>
+                        <span style="padding:2px 8px;background:var(--bg-card);border-radius:3px;font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--text);">customer impact</span>
+                        <span style="padding:2px 8px;background:var(--bg-card);border-radius:3px;font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--text);">data / security surface</span>
+                        <span style="padding:2px 8px;background:var(--bg-card);border-radius:3px;font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--text);">cross-service change</span>
+                        <span style="padding:2px 8px;background:var(--bg-card);border-radius:3px;font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--text);">migration risk</span>
+                        <div style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--text-dim);">Evaluated by Orchestrator on job registration · overridable by Tech Lead via FeatureOutlook</div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- PHASE 3 -->
+        <div class="g-full">
+            <div class="p3-box">
+                <div class="phase-hdr">
+                    <div><span class="badge p3">PHASE 3 · AUTONOMOUS EXECUTION — TEAM AGENT WORKSPACE</span><div class="phase-sub">◆ AUTOMATED · AGENTS GOVERN · SINGLE WORKSPACE · ALL REPOS IN CONTEXT</div></div>
+                    <div class="section-right">One coordinated workspace · sub-agents work across all affected repos simultaneously</div>
+                </div>
+                <!-- Entry / Exit criteria -->
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+
+                    <div style="background:var(--p3a-bg);border-left:3px solid var(--p3a);border-radius:4px;padding:10px 12px;">
+                        <div style="font-family:'JetBrains Mono',monospace;font-size:7px;font-weight:700;color:var(--p3a-bright);letter-spacing:1.8px;text-transform:uppercase;margin-bottom:7px;">▶ ENTRY CRITERIA</div>
+                        <div style="display:flex;flex-direction:column;gap:3px;">
+                            <div style="font-size:8.5px;color:var(--text);display:flex;align-items:center;gap:6px;"><span style="color:var(--p3a);font-size:8px;">✓</span> Approved <span style="font-family:'JetBrains Mono',monospace;color:var(--p2-bright);">plan.md</span> · spec-kit validated</div>
+                            <div style="font-size:8.5px;color:var(--text);display:flex;align-items:center;gap:6px;"><span style="color:var(--p3a);font-size:8px;">✓</span> Repos scoped · cross-repo graph built</div>
+                            <div style="font-size:8.5px;color:var(--text);display:flex;align-items:center;gap:6px;"><span style="color:var(--p3a);font-size:8px;">✓</span> Acceptance criteria present + testable</div>
+                            <div style="font-size:8.5px;color:var(--text);display:flex;align-items:center;gap:6px;"><span style="color:var(--p3a);font-size:8px;">✓</span> Risk tier assigned · gate intensity set</div>
+                            <div style="font-size:8.5px;color:var(--text);display:flex;align-items:center;gap:6px;"><span style="color:var(--p3a);font-size:8px;">✓</span> NFR checklist cleared</div>
+                        </div>
+                    </div>
+
+                    <div style="background:var(--p3a-bg);border-left:3px solid var(--p3b);border-radius:4px;padding:10px 12px;">
+                        <div style="font-family:'JetBrains Mono',monospace;font-size:7px;font-weight:700;color:var(--p3b-bright);letter-spacing:1.8px;text-transform:uppercase;margin-bottom:7px;">■ EXIT CRITERIA</div>
+                        <div style="display:flex;flex-direction:column;gap:3px;">
+                            <div style="font-size:8.5px;color:var(--text);display:flex;align-items:center;gap:6px;"><span style="color:var(--p3b);font-size:8px;">✓</span> All PRs open · linked to job</div>
+                            <div style="font-size:8.5px;color:var(--text);display:flex;align-items:center;gap:6px;"><span style="color:var(--p3b);font-size:8px;">✓</span> E2E tests passed across all repos</div>
+                            <div style="font-size:8.5px;color:var(--text);display:flex;align-items:center;gap:6px;"><span style="color:var(--p3b);font-size:8px;">✓</span> Preview environment validated</div>
+                            <div style="font-size:8.5px;color:var(--text);display:flex;align-items:center;gap:6px;"><span style="color:var(--p3b);font-size:8px;">✓</span> All PRs merged to develop</div>
+                            <div style="font-size:8.5px;color:var(--text);display:flex;align-items:center;gap:6px;"><span style="color:#f87171;font-size:8px;">✗</span> Unresolved escalation <span style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:#f87171;">= blocked</span></div>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="p3-orch-info">
+                    <span class="orch-dot" style="background:var(--p3a);"></span>
+                    <span class="ylbl">🔧 TEAM AGENT WORKSPACE</span><span style="color:var(--text-dim);">|</span>
+                    <span>All affected repos cloned · sub-agents share full cross-repo context</span>
+                    <span style="color:var(--text-dim);">Source:</span>
+                    <span style="color:var(--text);">feature</span><span style="color:var(--text-dim);">or</span><span style="color:var(--pm);">maintenance</span>
+                    <span style="color:var(--text-dim);">|</span>
+                    <span class="nametag amara">Task Agent</span><span class="nametag clare">Execution Agent</span><span class="nametag hal">Test Agent</span><span class="nametag zara">Validation Agent</span><span style="color:var(--text-dim);">tasks</span><span class="nametag reese">Review Agent</span><span style="color:var(--text-dim);">reviews</span>
+                </div>
+                <!-- Two-column: left = stages, right = unified sidebar -->
+                <div style="display:flex;gap:16px;align-items:flex-start;">
+
+                    <!-- LEFT: 3a + 3b stages stacked -->
+                    <div style="flex:1;min-width:0;">
+                        <div class="sub-hdr blue">3A · AGENT EXECUTION</div>
+                        <div class="sub-desc">runs inside team workspace · per-repo execution · each stage gates before advancing</div>
+                        <div class="p3a-row">
+                            <div class="p3a-stages">
+                                <div class="p3-card"><div class="sn">STAGE 01</div><div class="p3-st">📋 Tasks</div><ul><li>Decompose plan.md</li><li>Scope tasks per repo</li><li>Map cross-repo deps</li></ul><div class="qg"><span class="gt con">● Continue</span><span class="gt arf">● Auto-refine</span><span class="gt esc">● Escalate</span></div><div class="out">Output: <span class="outv">tasks.json (all repos)</span></div></div>
+                                <div class="p3a-arrow"><div class="al"></div><div class="albl">tasks</div></div>
+                                <div class="p3-card"><div class="sn">STAGE 02</div><div class="p3-st">⚡ Implement</div><div class="qg-label">QUALITY GATE</div><div class="qg"><span class="gt con">● Continue</span><span class="gt arf">● Auto-refine</span><span class="gt esc">● Escalate</span></div><ul><li>Edit code across all repos</li><li>Changes staged together</li><li>Build verification</li></ul><div class="out">Output: <span class="outv">diffs across all repos</span></div></div>
+                                <div class="p3a-arrow"><div class="al"></div><div class="albl">diffs</div></div>
+                                <div class="p3-card"><div class="sn">STAGE 03</div><div class="p3-st">✅ Validate + E2E</div><div class="qg-label">QUALITY GATE</div><div class="qg"><span class="gt con">● Continue</span><span class="gt arf">● Auto-refine</span><span class="gt esc">● Escalate</span></div><ul><li>E2E across repos in workspace</li><li>Cross-repo code preview</li><li>Contract validation</li></ul><div class="out">Output: <span class="outv">qa-report + review-notes</span></div></div>
+                                <div class="p3a-arrow"><div class="al"></div><div class="albl">qa-report</div></div>
+                                <div style="position:relative;border:2px solid var(--p3a);border-radius:6px;padding:16px 10px 10px;background:var(--p3a-card-bg);">
+                                    <div style="position:absolute;top:-8px;left:10px;font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--p3a-bright);letter-spacing:2px;text-transform:uppercase;background:var(--p3a-bg);padding:0 6px;">3A OUTPUT</div>
+                                    <div class="p3-card" style="border:none;padding:0;background:transparent;flex:none;width:192px;"><div class="sn">STAGE 04</div><div class="p3-st">🔀 Open PRs</div><div class="qg"><span class="gt opr">● Open PRs</span><span class="gt arf">● Auto-refine</span><span class="gt esc">● Escalate</span></div><ul><li>PRs per affected repo</li><li>All PRs linked to feature</li><li>Orchestrator collects refs</li></ul><div class="trigger-box">Trigger: 3b once all PRs ready</div></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="display:flex;align-items:center;gap:10px;margin:4px 0 16px;"><div style="flex:1;height:1px;background:linear-gradient(to right,var(--p3a-border),transparent);"></div><div style="font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--text-dim);letter-spacing:2px;text-transform:uppercase;white-space:nowrap;padding:0 8px;">3A → 3B</div><div style="flex:1;height:1px;background:linear-gradient(to left,var(--p3b),transparent);"></div></div>
+                        <div class="sub-hdr green">3B · INTEGRATION & PREVIEW</div>
+                        <div class="sub-desc">All PRs collected · Harness assembles combined full-stack preview · integration tests · merge to develop</div>
+                        <div class="p3b-row">
+                            <div class="p3b-stages">
+                                <div class="p3b-card"><div class="sn">STAGE 05</div><div class="p3-st">📥 Collect PRs</div><ul><li>Orchestrator awaits all PRs</li><li>Verifies all repos ready</li><li>Assembles PR manifest</li></ul><div class="qg-label">INTEGRATION GATE</div><div class="qg"><span class="ig launch">● Launch preview</span><span class="ig esc">● Escalate</span></div><div class="out">Input: <span class="outv">PR refs from all repos</span></div></div>
+                                <div class="p3a-arrow"><div class="al" style="background:var(--p3b);"></div><div class="albl">PR manifest</div></div>
+                                <div class="p3b-card"><div class="sn">STAGE 06</div><div class="p3-st">👁 Preview Env</div><ul><li>Harness CI — all repos</li><li>Combined preview URL / Live</li></ul><div class="qg-label">INTEGRATION GATE</div><div class="qg"><span class="ig merge">● Merge to develop</span><span class="ig ret">● Re-test</span><span class="ig esc">● Escalate</span></div><div class="out">Output: <span class="outv">preview-dev — full stack</span></div></div>
+                                <div class="p3a-arrow"><div class="al" style="background:var(--p3b);"></div><div class="albl">approved</div></div>
+                                <div style="position:relative;border:2px solid var(--green);border-radius:6px;padding:16px 10px 10px;background:var(--bg);flex:1;">
+                                    <div style="position:absolute;top:-8px;left:10px;font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--green);letter-spacing:2px;text-transform:uppercase;background:var(--bg);padding:0 6px;">END OF SCOPE</div>
+                                    <div class="end-card" style="border:none;padding:0;background:transparent;"><div class="sn">STAGE 07</div><div class="p3-st">🚀 Merge → develop</div><ul style="list-style:none;"><li>All PRs merged to develop</li><li>develop CI runs</li><li>Combined dev env updated</li></ul><div class="done-line">Done: feature in combined dev environment</div></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT: unified sidebar spanning 3a + 3b -->
+                    <div style="flex:0 0 202px;display:flex;flex-direction:column;gap:8px;align-self:stretch;">
+                        <div class="esc-side" style="flex:1;"><div class="et">🚨 Escalate to HITL</div><div style="font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--p1-bright);background:var(--p1-badge-bg);border-radius:3px;padding:2px 7px;display:inline-block;margin-bottom:7px;">Requires human response · target 4h</div><h5>3a — per-repo blockers</h5><ul><li>Architectural conflict</li><li>Ambiguous acceptance criteria</li><li>Cross-repo dependency conflicts</li><li>No safe retry path <span style="font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--p1-bright);">(max 3 · per stage)</span></li></ul><h5>3b — integration blockers</h5><ul><li>Cross-repo contract mismatch</li><li>E2E failure with no safe fix</li><li>Product ambiguity revealed late</li></ul></div>
+                        <div class="ar-card"><div class="at">🔄 Auto-Refine</div><div class="as">Agent loops without human</div><ul style="list-style:none;"><li>Missing test coverage</li><li>Failing lint / type errors</li><li>Build failure (retryable)</li><li>Incomplete API stub coverage</li></ul></div>
+                        <div class="go-card"><h4>ACCOUNTABILITY</h4><div class="go-row"><span class="role pm">Product</span><span>accountable for feature intent</span></div><div class="go-row"><span class="role tl">Tech Lead</span><span>accountable for technical approval</span></div><div class="go-row"><span class="role ag">Human Approver</span><span>accountable for gate decision</span></div><div class="go-row"><span class="role bt">Agent</span><span>produces execution status + evidence</span></div></div>
+                    </div>
+
+                </div>
+                <div class="gates-row"><div class="gates-label">GATES:</div><div class="gates-bar"><div class="g-seg gn">● Continue — output sufficient</div><div class="g-seg bl">● Auto-refine — agent self-corrects</div><div class="g-seg rd">● Escalate — human re-enters — scope ends at develop</div></div></div>
+                <div style="display:flex;align-items:flex-start;gap:8px;margin-top:10px;padding:8px 10px;background:var(--p3a-bg);border-radius:4px;">
+                    <span style="color:var(--yellow);font-size:11px;flex-shrink:0;line-height:1.4;">⚠️</span>
+                    <div><span style="font-size:9px;font-weight:700;color:var(--text-white);">Scope ends at merge to develop.</span> <span style="font-size:8.5px;color:var(--text-bright);">Release, production rollout, rollback, and compliance approvals are downstream and out of scope.</span></div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- SYSTEM FOOTER BAND -->
+        <div class="g-full">
+            <div style="background:var(--bg-container);border-radius:8px;overflow:hidden;margin-bottom:10px;">
+
+                <!-- Row 1: Key Principle -->
+                <div style="border-bottom:1px solid var(--border);padding:16px 20px;display:flex;align-items:flex-start;gap:16px;">
+                    <span style="font-family:'JetBrains Mono',monospace;font-size:7.5px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--p1-bright);white-space:nowrap;padding-top:1px;flex-shrink:0;">KEY PRINCIPLE</span>
+                    <div style="width:1px;height:14px;background:var(--border);flex-shrink:0;margin-top:1px;"></div>
+                    <div style="font-size:9.5px;color:var(--text);line-height:1.65;">
+                        <span style="color:var(--p1-bright);" class="fw700">Humans govern meaning.</span>
+                        <span style="color:var(--p2-bright);" class="fw700">Tech design produces execution-safe artifacts.</span>
+                        <span style="color:var(--pm);" class="fw700">Maintenance agent identifies code health issues.</span>
+                        <span style="color:var(--p3a-bright);" class="fw700">Agents execute within approved scope.</span>
+                        · <span style="color:var(--text-bright);">Product accountable for feature intent · Tech Design accountable for technical approval · Human approver accountable for gate decision · Agent produces execution status + evidence.</span> Phase 3 runs as one Team Agent workspace — sub-agents work across all repos simultaneously. Both feature work (Phase 1→2) and maintenance work (Phase M) converge on Phase 3 after HITL approval. Escalations route back to Phase 2 / Phase M or are resolved inline via HITL. 3b assembles the combined preview and merges all PRs to <span class="u">develop</span>.
+                    </div>
+                </div>
+
+                <!-- Row 2: Pilot Scope + Measured By -->
+                <div style="border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;gap:24px;">
+                    <!-- Pilot scope -->
+                    <div style="display:flex;align-items:center;gap:14px;flex-shrink:0;">
+                        <div style="display:flex;gap:6px;align-items:center;">
+                            <span style="color:var(--p3b);font-size:10px;flex-shrink:0;">✓</span>
+                            <div>
+                                <span style="font-family:'JetBrains Mono',monospace;font-size:7.5px;font-weight:700;color:var(--p3b-bright);text-transform:uppercase;letter-spacing:0.5px;">Pilot scope</span>
+                                <span style="font-size:8px;color:var(--text-dim);margin-left:6px;">Bounded feature work · maintenance · dependency upgrades</span>
+                            </div>
+                        </div>
+                        <div style="display:flex;gap:6px;align-items:center;">
+                            <span style="color:#f87171;font-size:10px;flex-shrink:0;">✗</span>
+                            <div>
+                                <span style="font-family:'JetBrains Mono',monospace;font-size:7.5px;font-weight:700;color:#f87171;text-transform:uppercase;letter-spacing:0.5px;">Out of scope</span>
+                                <span style="font-size:8px;color:var(--text-dim);margin-left:6px;">Incidents · major migrations · ambiguous discovery</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="width:1px;height:20px;background:var(--border);flex-shrink:0;"></div>
+                    <!-- Measured by -->
+                    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex:1;">
+                        <div style="font-family:'JetBrains Mono',monospace;font-size:7.5px;font-weight:700;color:var(--text-dim);letter-spacing:1.8px;text-transform:uppercase;white-space:nowrap;flex-shrink:0;">OPERATING METRICS</div>
+                        <div style="width:1px;height:12px;background:var(--border);flex-shrink:0;"></div>
+                        <div style="display:flex;align-items:center;gap:5px;"><span style="width:5px;height:5px;border-radius:50%;background:var(--p3b);display:inline-block;"></span><span style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--text-bright);">Autonomous Completion Rate</span><span style="font-size:7px;color:var(--text-dim);">without HITL</span><span style="font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--p3b);">target &gt;70%</span></div>
+                        <div style="display:flex;align-items:center;gap:5px;"><span style="width:5px;height:5px;border-radius:50%;background:var(--p1-bright);display:inline-block;"></span><span style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--text-bright);">Escalation Rate</span><span style="font-size:7px;color:var(--text-dim);">% per phase</span></div>
+                        <div style="display:flex;align-items:center;gap:5px;"><span style="width:5px;height:5px;border-radius:50%;background:#f87171;display:inline-block;"></span><span style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--text-bright);">Defect Escape Rate</span><span style="font-size:7px;color:var(--text-dim);">post-merge</span><span style="font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--p1-bright);">target &lt;5%</span></div>
+                        <div style="display:flex;align-items:center;gap:5px;"><span style="width:5px;height:5px;border-radius:50%;background:var(--p3a-bright);display:inline-block;"></span><span style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--text-bright);">Cycle Time</span><span style="font-size:7px;color:var(--text-dim);">idea → develop</span></div>
+                        <div style="display:flex;align-items:center;gap:5px;"><span style="width:5px;height:5px;border-radius:50%;background:var(--p2-bright);display:inline-block;"></span><span style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--text-bright);">Rework Rate</span><span style="font-size:7px;color:var(--text-dim);">→ Phase 2</span></div>
+                    </div>
+                </div>
+
+                <!-- Row 3: Legend footer -->
+                <div style="padding:11px 20px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                    <span class="fp-tag t1">● Phase 1 — Planning Agent + HITL</span>
+                    <span class="fp-tag t2">● Phase 2 — Tech Design</span>
+                    <span class="fp-tag tm">● Phase M — Maintenance</span>
+                    <span class="fp-tag t3a">● Phase 3a — Execution</span>
+                    <span class="fp-tag t3b">● Phase 3b — Integration</span>
+                    <span class="fg-tag c">● Continue</span>
+                    <span class="fg-tag a">● Auto-refine</span>
+                    <span class="fg-tag e">● Escalate</span>
+                    <span class="footer-ver" style="margin-left:auto;">Governed Agentic Delivery · v1.1 · March 2026</span>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<button class="mode-toggle" onclick="document.body.classList.toggle('light'); this.querySelector('.toggle-icon').textContent = document.body.classList.contains('light') ? '🌙' : '☀️'; this.querySelector('.toggle-label').textContent = document.body.classList.contains('light') ? 'Dark' : 'Light';">
+    <span class="toggle-icon">☀️</span>
+    <span class="toggle-label">Light</span>
+</button>
+
+</body>
+</html>
