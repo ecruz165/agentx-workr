@@ -1,0 +1,1526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Governed Agentic Delivery — Deployment &amp; Factory Floor</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+        :root {
+            --bg: #111115;
+            --bg-card: #18181e;
+            --bg-raised: #1c1c24;
+            --border: #2a2a30;
+            --border-bright: #3a3a42;
+            --text: #8a8f9a;
+            --text-mid: #b0b4be;
+            --text-bright: #d4d6de;
+            --text-white: #eaecf2;
+            --amber: #f59e0b;
+            --amber-dim: #2a2010;
+            --purple: #a78bfa;
+            --purple-dim: #1e1830;
+            --purple-glow: rgba(167,139,250,0.06);
+            --blue: #3b82f6;
+            --blue-dim: #121830;
+            --blue-glow: rgba(59,130,246,0.06);
+            --cyan: #22d3ee;
+            --cyan-dim: #0e1a22;
+            --cyan-glow: rgba(34,211,238,0.06);
+            --green: #34d399;
+            --green-dim: #0e1e14;
+            --sky: #38bdf8;
+            --sky-dim: #0e1620;
+            --red: #ef4444;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: var(--bg);
+            color: var(--text-bright);
+            font-family: 'Inter', -apple-system, sans-serif;
+            padding: 40px 24px 60px;
+            min-height: 100vh;
+        }
+
+        h1, h2, h3, .mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* ── Page Title ── */
+        .page-title { text-align: center; margin-bottom: 48px; }
+        .page-title h1 {
+            font-size: 1.6rem; font-weight: 700;
+            color: var(--text-white); letter-spacing: -0.5px;
+        }
+        .page-title .subtitle {
+            font-size: 0.85rem; color: var(--text); margin-top: 4px;
+        }
+
+        /* ── Section Headers ── */
+        .section-head {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+        .section-head h2 {
+            font-size: 1.2rem; font-weight: 700;
+            color: var(--text-white); letter-spacing: -0.3px;
+        }
+        .section-head p {
+            font-size: 0.78rem; color: var(--text); margin-top: 4px;
+        }
+        .section-divider {
+            max-width: 900px; margin: 64px auto;
+            border: none; border-top: 1px solid var(--border);
+        }
+
+        /* ═══════════════════════════════════════════ */
+        /*  SECTION 1 — DEPLOYMENT COMPONENT DIAGRAM   */
+        /* ═══════════════════════════════════════════ */
+
+        .deploy-grid {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-rows: auto;
+            gap: 16px;
+            grid-template-areas:
+                "orch   pdm    ctx"
+                "fo     ws     ee"
+                "cedge  prev   maint"
+                "ext    ext    ext";
+        }
+
+        .dc {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px;
+            position: relative;
+        }
+        .dc-header {
+            display: flex; align-items: center; gap: 8px;
+            margin-bottom: 10px;
+        }
+        .dc-icon {
+            width: 32px; height: 32px; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.9rem; font-weight: 700; flex-shrink: 0;
+        }
+        .dc-name {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.78rem; font-weight: 700;
+            color: var(--text-white);
+        }
+        .dc-tech {
+            font-size: 0.68rem; color: var(--text);
+            line-height: 1.5; margin-bottom: 8px;
+        }
+        .dc-role {
+            font-size: 0.68rem; color: var(--text-mid);
+            line-height: 1.5;
+        }
+        .dc-lifecycle {
+            display: inline-block;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.52rem; font-weight: 600;
+            padding: 2px 7px; border-radius: 3px;
+            text-transform: uppercase; letter-spacing: 0.5px;
+            position: absolute; top: 12px; right: 12px;
+        }
+        .lc-always { background: rgba(34,211,238,0.1); color: var(--cyan); border: 1px solid rgba(34,211,238,0.2); }
+        .lc-ephemeral { background: rgba(59,130,246,0.1); color: var(--blue); border: 1px solid rgba(59,130,246,0.2); }
+        .lc-local { background: rgba(167,139,250,0.1); color: var(--purple); border: 1px solid rgba(167,139,250,0.2); }
+        .lc-scheduled { background: rgba(56,189,248,0.1); color: var(--sky); border: 1px solid rgba(56,189,248,0.2); }
+        .lc-external { background: rgba(136,135,128,0.1); color: var(--text); border: 1px solid rgba(136,135,128,0.2); }
+
+        /* Grid placement */
+        .dc-orch  { grid-area: orch;  border-color: rgba(34,211,238,0.25); }
+        .dc-pdm   { grid-area: pdm;   border-color: rgba(167,139,250,0.25); }
+        .dc-ctx   { grid-area: ctx;   border-color: rgba(245,158,11,0.25); }
+        .dc-fo    { grid-area: fo;    border-color: rgba(167,139,250,0.25); }
+        .dc-ws    { grid-area: ws;    border-color: rgba(59,130,246,0.2); }
+        .dc-ee    { grid-area: ee;    border-color: rgba(59,130,246,0.25); }
+        .dc-cedge { grid-area: cedge; border-color: rgba(245,158,11,0.2); }
+        .dc-prev  { grid-area: prev;  border-color: rgba(52,211,153,0.25); }
+        .dc-cli   { grid-area: cli;   border-color: rgba(167,139,250,0.2); }
+        .dc-maint { grid-area: maint; border-color: rgba(56,189,248,0.25); }
+        .dc-ext   { grid-area: ext;   border-color: rgba(136,135,128,0.2); }
+
+        .dc-icon-cyan  { background: var(--cyan-dim); color: var(--cyan); border: 1px solid rgba(34,211,238,0.3); }
+        .dc-icon-amber { background: var(--amber-dim); color: var(--amber); border: 1px solid rgba(245,158,11,0.3); }
+        .dc-icon-purple{ background: var(--purple-dim); color: var(--purple); border: 1px solid rgba(167,139,250,0.3); }
+        .dc-icon-blue  { background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(59,130,246,0.3); }
+        .dc-icon-sky   { background: var(--sky-dim); color: var(--sky); border: 1px solid rgba(56,189,248,0.3); }
+        .dc-icon-gray  { background: rgba(136,135,128,0.08); color: var(--text); border: 1px solid rgba(136,135,128,0.2); }
+
+        /* Connection annotations */
+        .dc-connections {
+            margin-top: 10px;
+            padding-top: 8px;
+            border-top: 1px solid var(--border);
+        }
+        .dc-conn {
+            font-size: 0.6rem; color: var(--text);
+            padding: 2px 0; display: flex; align-items: center; gap: 5px;
+        }
+        .dc-conn .arrow { font-family: 'JetBrains Mono', monospace; font-weight: 600; }
+
+        /* External services sub-grid */
+        .ext-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 10px;
+        }
+        .ext-item {
+            text-align: center;
+            padding: 8px 4px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: var(--bg);
+        }
+        .ext-item .ext-name {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem; font-weight: 600;
+            color: var(--text-mid); display: block;
+        }
+        .ext-item .ext-desc {
+            font-size: 0.58rem; color: var(--text);
+            margin-top: 2px;
+        }
+
+        @media (max-width: 768px) {
+            .deploy-grid {
+                grid-template-columns: 1fr;
+                grid-template-areas:
+                    "orch" "pdm" "ctx" "fo" "ws"
+                    "ee" "cedge" "prev" "maint" "ext";
+            }
+            .ext-grid { grid-template-columns: 1fr 1fr; }
+        }
+
+        /* ═══════════════════════════════════════════ */
+        /*  SECTION 2 — THREE-LANE FACTORY FLOOR       */
+        /* ═══════════════════════════════════════════ */
+
+        .factory {
+            max-width: 1100px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        /* Lane headers */
+        .lane-headers {
+            display: grid;
+            grid-template-columns: 1fr 60px 1fr 60px 1fr;
+            max-width: 1100px;
+            margin: 0 auto 8px;
+        }
+        .lane-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 1.5px;
+            padding: 6px 16px; border-radius: 6px 6px 0 0;
+            text-align: center;
+        }
+        .lane-label-human { color: var(--purple); background: var(--purple-glow); }
+        .lane-label-system { color: var(--cyan); background: var(--cyan-glow); }
+        .lane-label-agent { color: var(--blue); background: var(--blue-glow); }
+        .lane-spacer { }
+
+        /* Station row */
+        .st-row {
+            display: grid;
+            grid-template-columns: 1fr 60px 1fr 60px 1fr;
+            margin-bottom: 6px;
+            position: relative;
+        }
+
+        /* Conveyor through center column */
+        .st-row .belt-col {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .st-row .belt-col::before {
+            content: '';
+            position: absolute;
+            top: 0; bottom: 0;
+            left: 50%; width: 4px;
+            transform: translateX(-50%);
+            background: repeating-linear-gradient(
+                to bottom, var(--border) 0px, var(--border) 8px,
+                transparent 8px, transparent 16px
+            );
+        }
+        .belt-dot {
+            width: 16px; height: 16px; border-radius: 50%;
+            border: 3px solid var(--border);
+            background: var(--bg); z-index: 2;
+        }
+
+        /* Flow arrow row */
+        .flow-row {
+            display: grid;
+            grid-template-columns: 1fr 60px 1fr 60px 1fr;
+            margin-bottom: 6px;
+        }
+        .flow-row .belt-col {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .flow-row .belt-col::before {
+            content: '';
+            position: absolute;
+            top: 0; bottom: 0;
+            left: 50%; width: 4px;
+            transform: translateX(-50%);
+            background: repeating-linear-gradient(
+                to bottom, var(--border) 0px, var(--border) 8px,
+                transparent 8px, transparent 16px
+            );
+        }
+        .flow-tag {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem; font-weight: 500;
+            padding: 3px 12px; border-radius: 20px;
+            border: 1px dashed var(--border);
+            color: var(--text); background: var(--bg);
+            z-index: 2; white-space: nowrap;
+        }
+
+        /* Station card */
+        .st-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px 16px;
+            position: relative;
+        }
+        .st-empty { }  /* placeholder cell */
+
+        /* Global sequence number badge */
+        .seq {
+            position: absolute;
+            top: -11px; right: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.62rem; font-weight: 800;
+            min-width: 22px; height: 22px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            z-index: 3;
+            border: 2px solid;
+        }
+        .seq-h { background: var(--purple-dim); color: var(--purple); border-color: var(--purple); }
+        .seq-s { background: var(--cyan-dim); color: var(--cyan); border-color: var(--cyan); }
+        .seq-a { background: var(--blue-dim); color: var(--blue); border-color: var(--blue); }
+        .seq-x { background: rgba(136,135,128,0.1); color: var(--text-mid); border-color: var(--text); }
+        .seq-sk { background: var(--sky-dim); color: var(--sky); border-color: var(--sky); }
+
+        .st-num {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.55rem; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 1.5px;
+            margin-bottom: 2px;
+        }
+        .st-card h3 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.92rem; font-weight: 700;
+            color: var(--text-white); margin-bottom: 10px;
+            line-height: 1.3;
+        }
+
+        /* WHO / WHAT / HOW subsections */
+        .wwh-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.55rem; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 1.2px;
+            color: var(--text); margin-bottom: 4px;
+            margin-top: 10px;
+        }
+        .wwh-label:first-of-type { margin-top: 0; }
+
+        .who-pills {
+            display: flex; flex-wrap: wrap; gap: 4px;
+        }
+        .wp {
+            font-size: 0.65rem; font-weight: 500;
+            padding: 2px 8px; border-radius: 14px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            color: var(--text-mid);
+        }
+        .wp-human { border-color: rgba(167,139,250,0.25); color: var(--purple); }
+        .wp-agent { border-color: rgba(59,130,246,0.25); color: var(--blue); }
+        .wp-system { border-color: rgba(34,211,238,0.25); color: var(--cyan); }
+
+        .what-list, .how-list {
+            list-style: none;
+        }
+        .what-list li, .how-list li {
+            font-size: 0.7rem; color: var(--text-mid);
+            padding: 2px 0 2px 14px; position: relative;
+            line-height: 1.5;
+        }
+        .what-list li::before {
+            content: '›'; position: absolute; left: 0;
+            color: var(--text); font-weight: 600;
+        }
+        .how-list li {
+            display: flex; align-items: flex-start; gap: 6px;
+            padding-left: 0;
+        }
+        .how-num {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.52rem; font-weight: 700;
+            min-width: 16px; height: 16px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; margin-top: 2px;
+        }
+        .hn-h { background: rgba(167,139,250,0.12); color: var(--purple); }
+        .hn-a { background: rgba(59,130,246,0.12); color: var(--blue); }
+        .hn-s { background: rgba(34,211,238,0.12); color: var(--cyan); }
+
+        /* Deployed-component annotation badge inside station cards */
+        .deploy-badge {
+            display: inline-flex; align-items: center; gap: 5px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.55rem; font-weight: 600;
+            padding: 3px 8px; border-radius: 4px;
+            margin-bottom: 8px; letter-spacing: 0.3px;
+        }
+        .db-cyan  { background: rgba(34,211,238,0.08);  color: var(--cyan);  border: 1px solid rgba(34,211,238,0.2); }
+        .db-purple{ background: rgba(167,139,250,0.08); color: var(--purple);border: 1px solid rgba(167,139,250,0.2); }
+        .db-blue  { background: rgba(59,130,246,0.08);  color: var(--blue);  border: 1px solid rgba(59,130,246,0.2); }
+        .db-amber { background: rgba(245,158,11,0.08);  color: var(--amber); border: 1px solid rgba(245,158,11,0.2); }
+        .db-sky   { background: rgba(56,189,248,0.08);  color: var(--sky);   border: 1px solid rgba(56,189,248,0.2); }
+        .db-green { background: rgba(52,211,153,0.08);  color: var(--green); border: 1px solid rgba(52,211,153,0.2); }
+        .db-gray  { background: rgba(136,135,128,0.08); color: var(--text);  border: 1px solid rgba(136,135,128,0.2); }
+
+        /* Color themes for station cards by lane */
+        .st-human { border-color: rgba(167,139,250,0.2); }
+        .st-human .st-num { color: var(--purple); }
+        .st-system { border-color: rgba(34,211,238,0.2); }
+        .st-system .st-num { color: var(--cyan); }
+        .st-agent { border-color: rgba(59,130,246,0.2); }
+        .st-agent .st-num { color: var(--blue); }
+        .st-mixed-ha { border-color: rgba(167,139,250,0.2); border-right-color: rgba(59,130,246,0.2); }
+        .st-mixed-ha .st-num { color: var(--purple); }
+        .st-sky { border-color: rgba(56,189,248,0.2); }
+        .st-sky .st-num { color: var(--sky); }
+
+        /* Belt dot colors */
+        .bd-amber  { border-color: var(--amber);  background: var(--amber-dim); }
+        .bd-purple { border-color: var(--purple); background: var(--purple-dim); }
+        .bd-cyan   { border-color: var(--cyan);   background: var(--cyan-dim); }
+        .bd-blue   { border-color: var(--blue);   background: var(--blue-dim); }
+        .bd-green  { border-color: var(--green);  background: var(--green-dim); }
+        .bd-sky    { border-color: var(--sky);    background: var(--sky-dim); }
+
+        /* ── Phase bands ── */
+        .phase-band {
+            position: relative;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 20px 12px 12px;
+            margin-bottom: 10px;
+        }
+        .phase-band-label {
+            position: absolute;
+            top: -10px; left: 24px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 1.5px;
+            padding: 2px 12px; border-radius: 4px;
+            z-index: 3;
+        }
+        .pb-p2 { border-color: rgba(167,139,250,0.15); background: rgba(167,139,250,0.02); }
+        .pb-p2 .phase-band-label { background: var(--purple-dim); color: var(--purple); border: 1px solid rgba(167,139,250,0.3); }
+        .pb-p3a { border-color: rgba(59,130,246,0.15); background: rgba(59,130,246,0.02); }
+        .pb-p3a .phase-band-label { background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(59,130,246,0.3); }
+        .pb-p3b { border-color: rgba(52,211,153,0.15); background: rgba(52,211,153,0.02); }
+        .pb-p3b .phase-band-label { background: var(--green-dim); color: var(--green); border: 1px solid rgba(52,211,153,0.3); }
+        .pb-pm { border-color: rgba(56,189,248,0.12); background: rgba(56,189,248,0.02); }
+        .pb-pm .phase-band-label { background: var(--sky-dim); color: var(--sky); border: 1px solid rgba(56,189,248,0.3); }
+        .pb-intake { border-color: rgba(245,158,11,0.12); background: rgba(245,158,11,0.02); }
+        .pb-intake .phase-band-label { background: var(--amber-dim); color: var(--amber); border: 1px solid rgba(245,158,11,0.3); }
+        .pb-dispatch { border-color: rgba(34,211,238,0.12); background: rgba(34,211,238,0.02); }
+        .pb-dispatch .phase-band-label { background: var(--cyan-dim); color: var(--cyan); border: 1px solid rgba(34,211,238,0.3); }
+
+        /* ── spec-kit engine callout ── */
+        .sk-engine {
+            border: 1px dashed;
+            border-radius: 8px;
+            padding: 10px 12px;
+            margin-top: 10px;
+        }
+        .sk-engine-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.58rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 1px;
+            margin-bottom: 6px;
+            display: flex; align-items: center; gap: 6px;
+        }
+        .sk-mode-tag {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.5rem; font-weight: 700;
+            padding: 1px 6px; border-radius: 3px;
+            text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .sk-hitl { border-color: rgba(167,139,250,0.3); background: rgba(167,139,250,0.04); }
+        .sk-hitl .sk-engine-title { color: var(--purple); }
+        .sk-hitl .sk-mode-tag { background: var(--purple-dim); color: var(--purple); border: 1px solid rgba(167,139,250,0.3); }
+        .sk-auto { border-color: rgba(59,130,246,0.3); background: rgba(59,130,246,0.04); }
+        .sk-auto .sk-engine-title { color: var(--blue); }
+        .sk-auto .sk-mode-tag { background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(59,130,246,0.3); }
+
+        .sk-agents {
+            display: flex; flex-wrap: wrap; gap: 4px;
+        }
+        .sk-agent-pill {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.55rem; font-weight: 500;
+            padding: 2px 7px; border-radius: 3px;
+            border: 1px solid;
+        }
+        .sk-agent-pill.pre { border-color: rgba(56,189,248,0.25); color: var(--sky); background: rgba(56,189,248,0.06); }
+        .sk-agent-pill.core { border-color: rgba(59,130,246,0.25); color: var(--blue); background: rgba(59,130,246,0.06); }
+        .sk-agent-pill.emit { border-color: rgba(52,211,153,0.25); color: var(--green); background: rgba(52,211,153,0.06); }
+        .sk-desc {
+            font-size: 0.62rem; color: var(--text); margin-top: 6px; line-height: 1.5;
+        }
+
+        /* Escalation callout */
+        .esc-callout {
+            max-width: 700px; margin: 32px auto 0; text-align: center;
+        }
+        .esc-box {
+            background: rgba(239,68,68,0.05);
+            border: 1px solid rgba(239,68,68,0.18);
+            border-radius: 10px; padding: 14px 24px;
+            display: inline-block;
+        }
+        .esc-box .esc-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 1.5px;
+            color: var(--red);
+        }
+        .esc-box p {
+            font-size: 0.72rem; color: var(--text-mid);
+            margin-top: 5px; line-height: 1.5;
+        }
+
+        /* Footer */
+        .foot {
+            text-align: center; margin-top: 48px;
+            font-size: 0.65rem; color: var(--text);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .lane-headers,
+            .st-row,
+            .flow-row {
+                grid-template-columns: 1fr;
+            }
+            .lane-headers .lane-spacer,
+            .st-row .belt-col,
+            .flow-row .belt-col,
+            .st-empty { display: none; }
+            .st-card { margin-bottom: 12px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="page-title">
+    <h1>The Factory Floor</h1>
+    <p class="subtitle">Governed Agentic Delivery — Deployment Components &amp; Delivery Line</p>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!--  SECTION 1 — DEPLOYMENT COMPONENT DIAGRAM                  -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+
+<div class="section-head">
+    <h2>Deployment Components</h2>
+    <p>What runs, where it runs, and how components connect</p>
+</div>
+
+<div class="deploy-grid">
+
+    <!-- Orchestrator -->
+    <div class="dc dc-orch">
+        <span class="dc-lifecycle lc-always">always-on</span>
+        <div class="dc-header">
+            <div class="dc-icon dc-icon-cyan">⬡</div>
+            <span class="dc-name">Orchestrator</span>
+        </div>
+        <div class="dc-tech">Spring Boot 3.x JAR · Spring Modulith · Spring State Machine<br>PostgreSQL (jobs, audit) · Redis (queues, locks)</div>
+        <div class="dc-role">Central nervous system — job lifecycle, state transitions, gate enforcement, dispatch, escalation routing, merge coordination, audit trail.</div>
+        <div class="dc-connections">
+            <div class="dc-conn"><span class="arrow" style="color:var(--purple)">←</span> Product Delivery Client (REST + WebSocket)</div>
+            <div class="dc-conn"><span class="arrow" style="color:var(--blue)">→</span> Execution Env (dispatch + callbacks)</div>
+            <div class="dc-conn"><span class="arrow" style="color:var(--amber)">↔</span> Context Server (Cypher queries)</div>
+            <div class="dc-conn"><span class="arrow" style="color:var(--text)">↔</span> GitHub (webhooks + PR merge)</div>
+            <div class="dc-conn"><span class="arrow" style="color:var(--text)">→</span> Harness (preview trigger + CI)</div>
+        </div>
+    </div>
+
+    <!-- Context Server -->
+    <div class="dc dc-ctx">
+        <span class="dc-lifecycle lc-always">always-on</span>
+        <div class="dc-header">
+            <div class="dc-icon dc-icon-amber">◈</div>
+            <span class="dc-name">Context Server</span>
+        </div>
+        <div class="dc-tech">PostgreSQL (project registry, RLS multi-tenancy)<br>Neo4j (fleet-wide graph intelligence) · MCP endpoint</div>
+        <div class="dc-role">Source of truth for cross-repo intelligence — patterns, dependency edges, prior run history. Provides tenant-scoped snapshots to Context Edge.</div>
+        <div class="dc-connections">
+            <div class="dc-conn"><span class="arrow" style="color:var(--cyan)">←</span> Orchestrator (job state, escalation log)</div>
+            <div class="dc-conn"><span class="arrow" style="color:var(--blue)">↔</span> Context Edge (snapshot + write-back)</div>
+        </div>
+    </div>
+
+    <!-- Product Delivery Manager -->
+    <div class="dc dc-pdm">
+        <span class="dc-lifecycle lc-always">always-on</span>
+        <div class="dc-header">
+            <div class="dc-icon dc-icon-purple">▣</div>
+            <span class="dc-name">Product Delivery Manager</span>
+        </div>
+        <div class="dc-tech">Web UI + REST API · Spring Boot<br>Product lifecycle, workspace provisioning, team management</div>
+        <div class="dc-role">Product onboarding &amp; management — register products, provision Delivery Workspaces, configure repos/teams/constitution, manage product lifecycle.</div>
+        <div class="dc-connections">
+            <div class="dc-conn"><span class="arrow" style="color:var(--purple)">←</span> Product Delivery Client (product commands)</div>
+            <div class="dc-conn"><span class="arrow" style="color:var(--cyan)">→</span> Orchestrator (product registry)</div>
+            <div class="dc-conn"><span class="arrow" style="color:var(--blue)">→</span> Delivery Workspace (repo provisioning)</div>
+            <div class="dc-conn"><span class="arrow" style="color:var(--amber)">→</span> Context Server (graph seeding)</div>
+        </div>
+    </div>
+
+    <!-- Product Delivery Client -->
+    <div class="dc dc-fo">
+        <span class="dc-lifecycle lc-local">dev machine</span>
+        <div class="dc-header">
+            <div class="dc-icon dc-icon-purple">◆</div>
+            <span class="dc-name">Product Delivery Client</span>
+        </div>
+        <div class="dc-tech">VS Code Extension + TUI (Ink) + CLI<br>TypeScript · Shared core</div>
+        <div class="dc-role">Unified human interface — product registration (workspace create), artifact authoring &amp; review, NFR checklists, gate approval, feature state transitions, pipeline management.</div>
+        <div class="dc-connections">
+            <div class="dc-conn"><span class="arrow" style="color:var(--purple)">↔</span> Product Delivery Manager (product lifecycle)</div>
+            <div class="dc-conn"><span class="arrow" style="color:var(--cyan)">↔</span> Orchestrator API (REST + WebSocket)</div>
+            <div class="dc-conn"><span class="arrow" style="color:var(--blue)">→</span> spec-kit CLI bridge</div>
+        </div>
+    </div>
+
+    <!-- Delivery Workspace -->
+    <div class="dc dc-ws">
+        <span class="dc-lifecycle lc-always" style="background:rgba(59,130,246,0.08); color:var(--blue); border-color:rgba(59,130,246,0.2);">persistent</span>
+        <div class="dc-header">
+            <div class="dc-icon dc-icon-blue">▣</div>
+            <span class="dc-name">Delivery Workspace</span>
+        </div>
+        <div class="dc-tech">Git repo (one per product)<br>Spec registry · .devcontainer · Agent context</div>
+        <div class="dc-role">Product identity — specs, configuration, agent overrides, constitution rules, workspace file. Config for the Execution Environment.</div>
+        <div class="dc-connections">
+            <div class="dc-conn"><span class="arrow" style="color:var(--blue)">→</span> Defines Execution Environment</div>
+        </div>
+    </div>
+
+    <!-- Execution Environment -->
+    <div class="dc dc-ee">
+        <span class="dc-lifecycle lc-ephemeral">ephemeral / job</span>
+        <div class="dc-header">
+            <div class="dc-icon dc-icon-blue">●</div>
+            <span class="dc-name">Execution Environment</span>
+        </div>
+        <div class="dc-tech">DevContainer (Docker) · Python · Node · Java<br>spec-kit + LangChain + LangSmith · OpenCode CLI · GitHub Models</div>
+        <div class="dc-role">The worker — runs spec-kit agents for both drafting (Phase 2) and autonomous implementation (Phase 3). Governed pipeline with quality gates.</div>
+        <div class="dc-connections">
+            <div class="dc-conn"><span class="arrow" style="color:var(--cyan)">↔</span> Orchestrator (status callbacks)</div>
+            <div class="dc-conn"><span class="arrow" style="color:var(--amber)">↔</span> Context Edge (MCP sidecar)</div>
+            <div class="dc-conn"><span class="arrow" style="color:var(--text)">→</span> GitHub (PRs) · LLM (code gen)</div>
+        </div>
+    </div>
+
+    <!-- Context Edge -->
+    <div class="dc dc-cedge">
+        <span class="dc-lifecycle lc-ephemeral">ephemeral</span>
+        <div class="dc-header">
+            <div class="dc-icon dc-icon-amber">◇</div>
+            <span class="dc-name">Context Edge</span>
+        </div>
+        <div class="dc-tech">Kuzu embedded graph · FastAPI · MCP server<br>In-container sidecar</div>
+        <div class="dc-role">Fast local graph queries inside the DevContainer. Buffers writes, flushes to Context Server on teardown. Degrades gracefully (stale/null modes).</div>
+        <div class="dc-connections">
+            <div class="dc-conn"><span class="arrow" style="color:var(--amber)">↔</span> Context Server (sync + flush)</div>
+        </div>
+    </div>
+
+    <!-- Preview Environment -->
+    <div class="dc dc-prev">
+        <span class="dc-lifecycle lc-ephemeral">ephemeral / PR</span>
+        <div class="dc-header">
+            <div class="dc-icon" style="background:var(--green-dim); color:var(--green); border:1px solid rgba(52,211,153,0.3);">▶</div>
+            <span class="dc-name">Preview Environment</span>
+        </div>
+        <div class="dc-tech">Docker Compose / Kubernetes · Harness-provisioned<br>Full-stack deployment per PR set · Ephemeral per feature job</div>
+        <div class="dc-role">Combined preview of all cross-repo PRs for a feature job. Deployed during Phase 3b for E2E validation before merge to develop.</div>
+        <div class="dc-connections">
+            <div class="dc-conn"><span class="arrow" style="color:var(--cyan)">←</span> Orchestrator (PR manifest + trigger)</div>
+            <div class="dc-conn"><span class="arrow" style="color:var(--text)">←</span> Harness (builds + deploys)</div>
+            <div class="dc-conn"><span class="arrow" style="color:var(--text)">←</span> GitHub (feature branches)</div>
+        </div>
+    </div>
+
+    <!-- Maintenance Agent -->
+    <div class="dc dc-maint">
+        <span class="dc-lifecycle lc-scheduled">cron / weekly</span>
+        <div class="dc-header">
+            <div class="dc-icon dc-icon-sky">⟳</div>
+            <span class="dc-name">Maintenance Agent</span>
+        </div>
+        <div class="dc-tech">Standalone CLI · Node/Python<br>Scanner adapters (Qodana, Snyk, SonarQube)</div>
+        <div class="dc-role">System immune system — scans codebase, triages findings, generates spec-kit maintenance bundles for human approval.</div>
+        <div class="dc-connections">
+            <div class="dc-conn"><span class="arrow" style="color:var(--cyan)">→</span> Orchestrator (registers bundles)</div>
+        </div>
+    </div>
+
+    <!-- External Systems -->
+    <div class="dc dc-ext">
+        <span class="dc-lifecycle lc-external">external</span>
+        <div class="dc-header">
+            <div class="dc-icon dc-icon-gray">⊞</div>
+            <span class="dc-name">External Systems</span>
+        </div>
+        <div class="ext-grid">
+            <div class="ext-item">
+                <span class="ext-name">GitHub</span>
+                <span class="ext-desc">Repos, PRs, Issues<br>Webhooks</span>
+            </div>
+            <div class="ext-item">
+                <span class="ext-name">Harness</span>
+                <span class="ext-desc">CI/CD pipelines<br>Preview environments</span>
+            </div>
+            <div class="ext-item">
+                <span class="ext-name">LLM Providers</span>
+                <span class="ext-desc">GitHub Models</span>
+            </div>
+            <div class="ext-item">
+                <span class="ext-name">Scanners</span>
+                <span class="ext-desc">Qodana · Snyk<br>SonarQube</span>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+<hr class="section-divider">
+
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!--  SECTION 2 — THREE-LANE FACTORY FLOOR                      -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+
+<div class="section-head">
+    <h2>Delivery Line</h2>
+    <p>One component per station — Human · System · Agent — showing Who, What, and How at each</p>
+</div>
+
+<div class="factory">
+
+    <!-- Lane Headers -->
+    <div class="lane-headers">
+        <div class="lane-label lane-label-human">◆ Human Lane</div>
+        <div class="lane-spacer"></div>
+        <div class="lane-label lane-label-system">⬡ System Lane</div>
+        <div class="lane-spacer"></div>
+        <div class="lane-label lane-label-agent">● Agent Lane</div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════ -->
+    <!--  PRODUCT REGISTRATION (one-time precondition)           -->
+    <!-- ══════════════════════════════════════════════════════ -->
+    <div class="phase-band pb-intake" style="border-style: dashed; opacity: 0.8;">
+        <span class="phase-band-label">Product Registration (one-time)</span>
+
+        <!-- 0a: Product Delivery Client + 0b: Product Delivery Manager (BE) -->
+        <div class="st-row">
+            <div class="st-card st-human" style="border-style: dashed;">
+                <span class="seq seq-h" style="opacity:0.6;">0a</span>
+                <div class="st-num">Product Delivery Client</div>
+                <h3>Product Registration</h3>
+                <p class="wwh-label">What</p>
+                <ul class="what-list"><li>Tech Lead registers product in the platform</li></ul>
+                <p class="wwh-label">How</p>
+                <ul class="how-list">
+                    <li><span class="how-num hn-h">1</span>Tech Lead runs <code>platform workspace create</code></li>
+                    <li><span class="how-num hn-h">2</span>Define product repos, tech stack, team</li>
+                </ul>
+            </div>
+
+            <div class="belt-col"><div class="belt-dot bd-amber"></div></div>
+
+            <div class="st-card st-system" style="border-style: dashed; border-color: rgba(167,139,250,0.2);">
+                <span class="seq seq-s" style="opacity:0.6;">0b</span>
+                <div class="st-num" style="color:var(--purple);">Product Delivery Manager</div>
+                <h3>Product Provisioning</h3>
+                <p class="wwh-label">What</p>
+                <ul class="what-list"><li>Orchestrate product onboarding across downstream systems</li></ul>
+                <p class="wwh-label">How</p>
+                <ul class="how-list">
+                    <li><span class="how-num hn-s">1</span>Validate product configuration</li>
+                    <li><span class="how-num hn-s">2</span>Provision Delivery Workspace</li>
+                    <li><span class="how-num hn-s">3</span>Seed Context Server graph</li>
+                    <li><span class="how-num hn-s">4</span>Register product with Orchestrator</li>
+                </ul>
+            </div>
+
+            <div class="belt-col" style="visibility:hidden;"><div class="belt-dot"></div></div>
+            <div class="st-empty"></div>
+        </div>
+
+        <!-- 0c: Delivery Workspace + 0d: Context Server -->
+        <div class="st-row">
+            <div class="st-empty"></div>
+            <div class="belt-col" style="visibility:hidden;"><div class="belt-dot"></div></div>
+
+            <div class="st-card st-system" style="border-style: dashed;">
+                <span class="seq seq-s" style="opacity:0.6;">0c</span>
+                <div class="st-num">Delivery Workspace</div>
+                <h3>Workspace Setup</h3>
+                <p class="wwh-label">What</p>
+                <ul class="what-list"><li>Initialize product-scoped repo &amp; configuration</li></ul>
+                <p class="wwh-label">How</p>
+                <ul class="how-list">
+                    <li><span class="how-num hn-s">1</span>Create Git repo with spec registry</li>
+                    <li><span class="how-num hn-s">2</span>Initialize .devcontainer definition</li>
+                    <li><span class="how-num hn-s">3</span>Set constitution &amp; agent context overrides</li>
+                    <li><span class="how-num hn-s">4</span>Register product repos in workspace file</li>
+                </ul>
+            </div>
+
+            <div class="belt-col" style="visibility:hidden;"><div class="belt-dot"></div></div>
+
+            <div class="st-card st-system" style="border-style: dashed; border-color: rgba(245,158,11,0.2);">
+                <span class="seq seq-s" style="opacity:0.6;">0d</span>
+                <div class="st-num" style="color:var(--amber);">Context Server</div>
+                <h3>Graph Setup</h3>
+                <p class="wwh-label">What</p>
+                <ul class="what-list"><li>Seed graph intelligence for new product</li></ul>
+                <p class="wwh-label">How</p>
+                <ul class="how-list">
+                    <li><span class="how-num hn-s">1</span>Register repo membership in project registry</li>
+                    <li><span class="how-num hn-s">2</span>Seed Neo4j graph with repo metadata &amp; dependencies</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="flow-row">
+        <div class="st-empty"></div>
+        <div class="belt-col"><span class="flow-tag">product registered → ready for features</span></div>
+        <div class="st-empty"></div>
+        <div class="st-empty"></div>
+        <div class="st-empty"></div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════ -->
+    <!--  INTAKE                                                 -->
+    <!-- ══════════════════════════════════════════════════════ -->
+    <div class="phase-band pb-intake">
+        <span class="phase-band-label">Intake</span>
+
+        <!-- Row 1: PM submits + Planning Agent (upstream context) -->
+        <div class="st-row">
+            <div class="st-card st-human">
+                <span class="seq seq-h">1</span>
+                <div class="st-num">Product Manager</div>
+                <h3>Submit feature.md</h3>
+                <p class="wwh-label">What</p>
+                <ul class="what-list"><li>Submit curated feature.md (type: Feature or Defect)</li></ul>
+                <p class="wwh-label">How</p>
+                <ul class="how-list">
+                    <li><span class="how-num hn-h">1</span>Review agent-curated output</li>
+                    <li><span class="how-num hn-h">2</span>Submit feature.md to Orchestrator</li>
+                </ul>
+            </div>
+
+            <div class="belt-col"><div class="belt-dot bd-amber"></div></div>
+            <div class="st-empty"></div>
+            <div class="belt-col" style="visibility:hidden;"><div class="belt-dot"></div></div>
+
+            <div class="st-card st-agent" style="border-style: dashed; opacity: 0.7;">
+                <span class="seq seq-a" style="opacity:0.6;">0</span>
+                <div class="st-num">Planning Agent</div>
+                <h3>Curate feature.md</h3>
+                <p class="wwh-label">What</p>
+                <ul class="what-list"><li>Upstream (Phase 1) — discover, distill, specify</li></ul>
+                <p class="wwh-label">How</p>
+                <ul class="how-list">
+                    <li><span class="how-num hn-a">1</span>Discovery &amp; distillation</li>
+                    <li><span class="how-num hn-a">2</span>Generate curated feature.md</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Row 2: Orchestrator registers -->
+        <div class="st-row">
+            <div class="st-empty"></div>
+            <div class="belt-col"><div class="belt-dot bd-amber"></div></div>
+
+            <div class="st-card st-system">
+                <span class="seq seq-s">2</span>
+                <div class="st-num">Orchestrator</div>
+                <h3>Job Registration</h3>
+                <p class="wwh-label">What</p>
+                <ul class="what-list"><li>Register feature.md, score risk tier, queue for Phase 2</li></ul>
+                <p class="wwh-label">How</p>
+                <ul class="how-list">
+                    <li><span class="how-num hn-s">1</span>Create job record (reads feature type from frontmatter)</li>
+                    <li><span class="how-num hn-s">2</span>Risk tier scored (repo criticality, data surface)</li>
+                    <li><span class="how-num hn-s">3</span>Job queued for Phase 2</li>
+                </ul>
+            </div>
+
+            <div class="belt-col" style="visibility:hidden;"><div class="belt-dot"></div></div>
+            <div class="st-empty"></div>
+        </div>
+    </div>
+
+    <div class="flow-row">
+        <div class="st-empty"></div>
+        <div class="belt-col"><span class="flow-tag">feature.md (Feature | Defect)</span></div>
+        <div class="st-empty"></div>
+        <div class="st-empty"></div>
+        <div class="st-empty"></div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════ -->
+    <!--  PHASE 2: TECH DESIGN                                  -->
+    <!-- ══════════════════════════════════════════════════════ -->
+    <div class="phase-band pb-p2">
+        <span class="phase-band-label">Phase 2 — Tech Design</span>
+
+        <!-- Row 1: speckit.constitution (load) -->
+        <div class="st-row">
+            <div class="st-empty"></div>
+            <div class="belt-col"><div class="belt-dot bd-purple"></div></div>
+
+            <div class="st-card st-system">
+                <span class="seq seq-s">3</span>
+                <div class="st-num">speckit.constitution</div>
+                <h3>Load Governance Rules</h3>
+                <span class="sk-mode-tag" style="display:inline-block; margin-bottom:6px;">run once</span>
+                <p class="wwh-label">What</p>
+                <ul class="what-list"><li>Load product constitution &amp; seed governance context</li></ul>
+                <p class="wwh-label">How</p>
+                <ul class="how-list">
+                    <li><span class="how-num hn-s">1</span>Load .speckit/constitution.md + product overrides</li>
+                    <li><span class="how-num hn-s">2</span>Seed governance context for all downstream agents</li>
+                </ul>
+            </div>
+
+            <div class="belt-col" style="visibility:hidden;"><div class="belt-dot"></div></div>
+            <div class="st-empty"></div>
+        </div>
+
+        <!-- Row 2: Constitution enrichment (TBD — LangGraph or spec-kit extension) -->
+        <div class="st-row">
+            <div class="st-empty"></div>
+            <div class="belt-col" style="visibility:hidden;"><div class="belt-dot"></div></div>
+
+            <div class="st-card st-system" style="border-style: dashed;">
+                <span class="seq seq-s">4</span>
+                <div class="st-num">Constitution Enrichment</div>
+                <h3>Feature-Specific Governance</h3>
+                <span class="sk-mode-tag" style="display:inline-block; margin-bottom:6px;">TBD · LangGraph or spec-kit ext</span>
+                <p class="wwh-label">What</p>
+                <ul class="what-list"><li>Interpret feature context → enrich constitution autonomously</li></ul>
+                <p class="wwh-label">How</p>
+                <ul class="how-list">
+                    <li><span class="how-num hn-s">1</span>Interpret feature.md context (e.g. payments → PCI rules)</li>
+                    <li><span class="how-num hn-s">2</span>Derive feature-specific governance constraints</li>
+                    <li><span class="how-num hn-s">3</span>Merge into active constitution for this job</li>
+                </ul>
+            </div>
+
+            <div class="belt-col" style="visibility:hidden;"><div class="belt-dot"></div></div>
+            <div class="st-empty"></div>
+        </div>
+
+        <!-- Row 3: speckit.analyze (system) -->
+        <div class="st-row">
+            <div class="st-empty"></div>
+            <div class="belt-col" style="visibility:hidden;"><div class="belt-dot"></div></div>
+
+            <div class="st-card st-system">
+                <span class="seq seq-s">5</span>
+                <div class="st-num">speckit.analyze</div>
+                <h3>Spec Consistency</h3>
+                <span class="sk-mode-tag" style="display:inline-block; margin-bottom:6px;">HITL</span>
+                <p class="wwh-label">What</p>
+                <ul class="what-list"><li>Validate spec ↔ plan consistency, detect blocking issues</li></ul>
+                <p class="wwh-label">How</p>
+                <ul class="how-list">
+                    <li><span class="how-num hn-s">1</span>Cross-check feature.md against existing artifacts</li>
+                    <li><span class="how-num hn-s">2</span>Flag gaps, conflicts, ambiguities</li>
+                </ul>
+            </div>
+
+            <div class="belt-col" style="visibility:hidden;"><div class="belt-dot"></div></div>
+            <div class="st-empty"></div>
+        </div>
+
+        <!-- Row 3: Execution Environment drafts artifacts (system) + LLM -->
+        <div class="st-row">
+            <div class="st-empty"></div>
+            <div class="belt-col" style="visibility:hidden;"><div class="belt-dot"></div></div>
+
+            <div class="st-card st-system">
+                <span class="seq seq-s">6</span>
+                <div class="st-num">Execution Environment</div>
+                <h3>Draft Artifacts</h3>
+                <span class="sk-mode-tag" style="display:inline-block; margin-bottom:6px;">HITL · Drafting</span>
+                <p class="wwh-label">What</p>
+                <ul class="what-list">
+                    <li>System drafts acceptance-criteria.md, architecture.md</li>
+                    <li>Drafts surfaced to humans for review</li>
+                </ul>
+                <p class="wwh-label">How</p>
+                <ul class="how-list">
+                    <li><span class="how-num hn-s">1</span>Construct prompts from feature.md + constitution context</li>
+                    <li><span class="how-num hn-s">2</span>LLM generates draft acceptance-criteria.md</li>
+                    <li><span class="how-num hn-s">3</span>LLM generates draft architecture.md</li>
+                    <li><span class="how-num hn-s">4</span>Validate drafts against governance rules</li>
+                </ul>
+            </div>
+
+            <div class="belt-col" style="visibility:hidden;"><div class="belt-dot"></div></div>
+            <div class="st-empty"></div>
+        </div>
+
+        <!-- Row 4: LLM Provider (system) -->
+        <div class="st-row">
+            <div class="st-empty"></div>
+            <div class="belt-col" style="visibility:hidden;"><div class="belt-dot"></div></div>
+
+            <div class="st-card st-system" style="border-color: rgba(136,135,128,0.2);">
+                <span class="seq seq-x">7</span>
+                <div class="st-num" style="color:var(--text);">LLM Provider</div>
+                <h3>GitHub Models</h3>
+                <p class="wwh-label">What</p>
+                <ul class="what-list"><li>Inference for artifact drafting &amp; validation</li></ul>
+                <p class="wwh-label">How</p>
+                <ul class="how-list">
+                    <li><span class="how-num hn-s">1</span>Receive enriched prompts from Execution Env</li>
+                    <li><span class="how-num hn-s">2</span>Return draft text &amp; structured outputs</li>
+                </ul>
+            </div>
+
+            <div class="belt-col" style="visibility:hidden;"><div class="belt-dot"></div></div>
+            <div class="st-empty"></div>
+        </div>
+
+        <!-- Row 5: Human authoring — review system drafts + author specialist artifacts -->
+        <div class="st-row">
+            <div class="st-card st-human">
+                <span class="seq seq-h">8</span>
+                <div class="st-num">Product Delivery Client</div>
+                <h3>Artifact Authoring &amp; Review</h3>
+                <p class="wwh-label">What</p>
+                <ul class="what-list">
+                    <li>Review &amp; refine <strong>system-drafted</strong> artifacts</li>
+                    <li>Author specialist artifacts (ux.md, qa-tests.md)</li>
+                    <li>NFR checklist review</li>
+                </ul>
+                <p class="wwh-label">How</p>
+                <ul class="how-list">
+                    <li><span class="how-num hn-h">1</span>Tech Lead self-assigns from queue</li>
+                    <li><span class="how-num hn-h">2</span>TL reviews system-drafted acceptance-criteria.md</li>
+                    <li><span class="how-num hn-h">3</span>TL reviews system-drafted architecture.md</li>
+                    <li><span class="how-num hn-h">4</span>UX authors ux.md</li>
+                    <li><span class="how-num hn-h">5</span>QA authors qa-tests.md</li>
+                    <li><span class="how-num hn-h">6</span>TL reviews NFR checklist</li>
+                </ul>
+            </div>
+
+            <div class="belt-col"><div class="belt-dot bd-purple"></div></div>
+            <div class="st-empty"></div>
+            <div class="belt-col" style="visibility:hidden;"><div class="belt-dot"></div></div>
+            <div class="st-empty"></div>
+        </div>
+
+        <!-- Row 6: Approval gate (human) -->
+        <div class="st-row" style="margin-top: 4px;">
+            <div class="st-card st-human">
+                <span class="seq seq-h">9</span>
+                <div class="st-num">Product Delivery Client</div>
+                <h3>Approval Gate</h3>
+                <p class="wwh-label">What</p>
+                <ul class="what-list">
+                    <li>Final gate before autonomous execution</li>
+                </ul>
+                <p class="wwh-label">How</p>
+                <ul class="how-list">
+                    <li><span class="how-num hn-h">1</span>TL confirms all NFRs reviewed</li>
+                    <li><span class="how-num hn-h">2</span>TL approves gate → plan.md generated</li>
+                    <li><span class="how-num hn-h">3</span>Optional: override risk tier</li>
+                </ul>
+            </div>
+
+            <div class="belt-col"><div class="belt-dot bd-purple"></div></div>
+            <div class="st-empty"></div>
+            <div class="belt-col" style="visibility:hidden;"><div class="belt-dot"></div></div>
+            <div class="st-empty"></div>
+        </div>
+    </div>
+
+    <div class="flow-row">
+        <div class="st-empty"></div>
+        <div class="belt-col"><span class="flow-tag">approved plan.md</span></div>
+        <div class="st-empty"></div>
+        <div class="st-empty"></div>
+        <div class="st-empty"></div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════ -->
+    <!--  DISPATCH                                              -->
+    <!-- ══════════════════════════════════════════════════════ -->
+    <div class="phase-band pb-dispatch">
+        <span class="phase-band-label">Dispatch</span>
+
+        <div class="st-row">
+            <div class="st-empty"></div>
+            <div class="belt-col"><div class="belt-dot bd-cyan"></div></div>
+
+            <div class="st-card st-system">
+                <span class="seq seq-s">10</span>
+                <div class="st-num">Orchestrator</div>
+                <h3>Bundle &amp; Dispatch</h3>
+                <p class="wwh-label">What</p>
+                <ul class="what-list"><li>Validate, package, and dispatch execution bundle</li></ul>
+                <p class="wwh-label">How</p>
+                <ul class="how-list">
+                    <li><span class="how-num hn-s">1</span>Validate artifact bundle &amp; preconditions</li>
+                    <li><span class="how-num hn-s">2</span>Assign autonomy level from risk tier</li>
+                    <li><span class="how-num hn-s">3</span>Provision DevContainer from .devcontainer/</li>
+                    <li><span class="how-num hn-s">4</span>Dispatch bundle → await heartbeat: READY</li>
+                </ul>
+            </div>
+
+            <div class="belt-col" style="visibility:hidden;"><div class="belt-dot"></div></div>
+            <div class="st-empty"></div>
+        </div>
+
+        <div class="st-row">
+            <div class="st-empty"></div>
+            <div class="belt-col" style="visibility:hidden;"><div class="belt-dot"></div></div>
+
+            <div class="st-card st-system" style="border-color: rgba(245,158,11,0.2);">
+                <span class="seq seq-s">11</span>
+                <div class="st-num" style="color:var(--amber);">Context Server</div>
+                <h3>Graph Enrichment</h3>
+                <p class="wwh-label">What</p>
+                <ul class="what-list"><li>Enrich bundle with cross-repo intelligence</li></ul>
+                <p class="wwh-label">How</p>
+                <ul class="how-list">
+                    <li><span class="how-num hn-s">1</span>Query Neo4j for cross-repo patterns &amp; dependencies</li>
+                    <li><span class="how-num hn-s">2</span>Export tenant-scoped snapshot for Context Edge</li>
+                    <li><span class="how-num hn-s">3</span>Package context with execution bundle</li>
+                </ul>
+            </div>
+
+            <div class="belt-col" style="visibility:hidden;"><div class="belt-dot"></div></div>
+            <div class="st-empty"></div>
+        </div>
+    </div>
+
+    <div class="flow-row">
+        <div class="st-empty"></div>
+        <div class="belt-col"><span class="flow-tag">execution bundle + context</span></div>
+        <div class="st-empty"></div>
+        <div class="st-empty"></div>
+        <div class="st-empty"></div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════ -->
+    <!--  PHASE 3a: AGENT EXECUTION                             -->
+    <!-- ══════════════════════════════════════════════════════ -->
+    <div class="phase-band pb-p3a">
+        <span class="phase-band-label">Phase 3a — Agent Execution</span>
+
+        <!-- spec-kit Pre-flight: analyze (constitution already loaded in Phase 2) -->
+        <div class="st-row">
+            <div class="st-empty"></div>
+            <div class="belt-col"><div class="belt-dot bd-blue"></div></div>
+
+            <div class="st-card st-system">
+                <span class="seq seq-s">12</span>
+                <div class="st-num">speckit.analyze</div>
+                <h3>Spec Consistency</h3>
+                <span class="sk-mode-tag" style="display:inline-block; margin-bottom:6px;">Autonomous</span>
+                <p class="wwh-label">What</p>
+                <ul class="what-list"><li>Spec ↔ plan consistency, blocking issue detection</li></ul>
+                <p class="wwh-label">How</p>
+                <ul class="how-list">
+                    <li><span class="how-num hn-s">1</span>Validate plan.md against spec + dependencies</li>
+                    <li><span class="how-num hn-s">2</span>Detect conflicts → escalate or proceed</li>
+                </ul>
+            </div>
+
+            <div class="belt-col" style="visibility:hidden;"><div class="belt-dot"></div></div>
+            <div class="st-empty"></div>
+        </div>
+
+        <!-- spec-kit Core: tasks + checklist + implement -->
+        <div class="st-row">
+            <div class="st-empty"></div>
+            <div class="belt-col" style="visibility:hidden;"><div class="belt-dot"></div></div>
+
+            <div class="st-card st-system">
+                <span class="seq seq-s">13</span>
+                <div class="st-num">speckit.tasks</div>
+                <h3>Task Decomposition</h3>
+                <span class="sk-mode-tag" style="display:inline-block; margin-bottom:6px;">Autonomous</span>
+                <p class="wwh-label">What</p>
+                <ul class="what-list"><li>Decompose plan into ordered per-repo tasks</li></ul>
+                <p class="wwh-label">How</p>
+                <ul class="how-list">
+                    <li><span class="how-num hn-s">1</span>Parse plan.md → scoped tasks per repo</li>
+                    <li><span class="how-num hn-s">2</span>Map cross-repo dependencies</li>
+                    <li><span class="how-num hn-s">3</span>Output tasks.json</li>
+                </ul>
+            </div>
+
+            <div class="belt-col" style="visibility:hidden;"><div class="belt-dot"></div></div>
+
+            <div class="st-card st-agent">
+                <span class="seq seq-a">14</span>
+                <div class="st-num">Task Agent</div>
+                <h3>LangChain Orchestration</h3>
+                <p class="wwh-label">What</p>
+                <ul class="what-list"><li>Route tasks, manage retry logic, enrichment</li></ul>
+                <p class="wwh-label">How</p>
+                <ul class="how-list">
+                    <li><span class="how-num hn-a">1</span>Sequence tasks by dependency order</li>
+                    <li><span class="how-num hn-a">2</span>Request Context Edge enrichment per task</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="st-row">
+            <div class="st-empty"></div>
+            <div class="belt-col" style="visibility:hidden;"><div class="belt-dot"></div></div>
+
+            <div class="st-card st-system">
+                <span class="seq seq-s">15</span>
+                <div class="st-num">speckit.checklist</div>
+                <h3>Quality Checklist</h3>
+                <span class="sk-mode-tag" style="display:inline-block; margin-bottom:6px;">Autonomous</span>
+                <p class="wwh-label">What</p>
+                <ul class="what-list"><li>Generate quality checklist per task from NFRs</li></ul>
+                <p class="wwh-label">How</p>
+                <ul class="how-list">
+                    <li><span class="how-num hn-s">1</span>Derive checks from NFRs + acceptance criteria</li>
+                    <li><span class="how-num hn-s">2</span>Attach verification checklist to each task</li>
+                </ul>
+            </div>
+
+            <div class="belt-col" style="visibility:hidden;"><div class="belt-dot"></div></div>
+
+            <div class="st-card st-system" style="border-color: rgba(245,158,11,0.2);">
+                <span class="seq seq-s">16</span>
+                <div class="st-num" style="color:var(--amber);">Context Edge</div>
+                <h3>Local Graph (MCP)</h3>
+                <p class="wwh-label">What</p>
+                <ul class="what-list"><li>Fast in-container graph queries &amp; write-back</li></ul>
+                <p class="wwh-label">How</p>
+                <ul class="how-list">
+                    <li><span class="how-num hn-s">1</span>Seed Kuzu from Context Server snapshot</li>
+                    <li><span class="how-num hn-s">2</span>Serve MCP enrichment queries</li>
+                    <li><span class="how-num hn-s">3</span>Buffer writes → flush on teardown</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="st-row">
+            <div class="st-empty"></div>
+            <div class="belt-col" style="visibility:hidden;"><div class="belt-dot"></div></div>
+
+            <div class="st-card st-system">
+                <span class="seq seq-s">17</span>
+                <div class="st-num">speckit.implement</div>
+                <h3>Code Generation</h3>
+                <span class="sk-mode-tag" style="display:inline-block; margin-bottom:6px;">Autonomous</span>
+                <p class="wwh-label">What</p>
+                <ul class="what-list"><li>Drive OpenCode + LLM for code generation per task</li></ul>
+                <p class="wwh-label">How</p>
+                <ul class="how-list">
+                    <li><span class="how-num hn-s">1</span>Construct enriched prompt from spec + context</li>
+                    <li><span class="how-num hn-s">2</span>Drive OpenCode → generate code + tests</li>
+                    <li><span class="how-num hn-s">3</span>Quality gate: continue / auto-refine (≤3) / escalate</li>
+                </ul>
+            </div>
+
+            <div class="belt-col" style="visibility:hidden;"><div class="belt-dot"></div></div>
+
+            <div class="st-card st-agent">
+                <span class="seq seq-a">18</span>
+                <div class="st-num">Execution Agent</div>
+                <h3>OpenCode + LLM</h3>
+                <p class="wwh-label">What</p>
+                <ul class="what-list"><li>Generate code per task, live MCP queries</li></ul>
+                <p class="wwh-label">How</p>
+                <ul class="how-list">
+                    <li><span class="how-num hn-a">1</span>Generate code + tests via OpenCode</li>
+                    <li><span class="how-num hn-a">2</span>Live MCP queries to Context Edge</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="st-row">
+            <div class="st-empty"></div>
+            <div class="belt-col" style="visibility:hidden;"><div class="belt-dot"></div></div>
+
+            <div class="st-card st-system" style="border-color: rgba(136,135,128,0.2);">
+                <span class="seq seq-x">19</span>
+                <div class="st-num" style="color:var(--text);">LLM Provider</div>
+                <h3>GitHub Models</h3>
+                <p class="wwh-label">What</p>
+                <ul class="what-list"><li>Code generation &amp; diff review inference</li></ul>
+                <p class="wwh-label">How</p>
+                <ul class="how-list">
+                    <li><span class="how-num hn-s">1</span>Receive prompts from OpenCode CLI</li>
+                    <li><span class="how-num hn-s">2</span>Return generated code + structured output</li>
+                </ul>
+            </div>
+
+            <div class="belt-col" style="visibility:hidden;"><div class="belt-dot"></div></div>
+
+            <div class="st-card st-agent">
+                <span class="seq seq-a">20</span>
+                <div class="st-num">Test Agent</div>
+                <h3>Validation</h3>
+                <p class="wwh-label">What</p>
+                <ul class="what-list"><li>Validate each task: build, types, tests, diff review</li></ul>
+                <p class="wwh-label">How</p>
+                <ul class="how-list">
+                    <li><span class="how-num hn-a">1</span>Build verification &amp; type checking</li>
+                    <li><span class="how-num hn-a">2</span>Run unit tests</li>
+                    <li><span class="how-num hn-a">3</span>LLM diff review against spec</li>
+                    <li><span class="how-num hn-a">4</span>Checklist verification</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- spec-kit Emit: taskstoissues + Review Agent + Developer -->
+        <div class="st-row">
+            <div class="st-card st-human" style="border-style: dashed; border-color: rgba(167,139,250,0.15);">
+                <span class="seq seq-h">21</span>
+                <div class="st-num">Developer</div>
+                <h3>Escalation Handler</h3>
+                <p class="wwh-label">What</p>
+                <ul class="what-list"><li>Resolve agent escalations (ambiguity, risk)</li></ul>
+                <p class="wwh-label">How</p>
+                <ul class="how-list">
+                    <li><span class="how-num hn-h">1</span>Receive escalation via Orchestrator</li>
+                    <li><span class="how-num hn-h">2</span>Attach to DevContainer or inline fix</li>
+                    <li><span class="how-num hn-h">3</span>Resolve → pipeline resumes</li>
+                </ul>
+            </div>
+
+            <div class="belt-col" style="visibility:hidden;"><div class="belt-dot"></div></div>
+
+            <div class="st-card st-system">
+                <span class="seq seq-s">22</span>
+                <div class="st-num">speckit.taskstoissues</div>
+                <h3>Tracking Issues</h3>
+                <span class="sk-mode-tag" style="display:inline-block; margin-bottom:6px;">Autonomous</span>
+                <p class="wwh-label">What</p>
+                <ul class="what-list"><li>Create tracking issues linked to completed tasks</li></ul>
+                <p class="wwh-label">How</p>
+                <ul class="how-list">
+                    <li><span class="how-num hn-s">1</span>Map completed tasks to issue tracker</li>
+                    <li><span class="how-num hn-s">2</span>Link issues to feature job</li>
+                </ul>
+            </div>
+
+            <div class="belt-col" style="visibility:hidden;"><div class="belt-dot"></div></div>
+
+            <div class="st-card st-agent">
+                <span class="seq seq-a">23</span>
+                <div class="st-num">Review Agent</div>
+                <h3>PR Composition</h3>
+                <p class="wwh-label">What</p>
+                <ul class="what-list"><li>Compose PRs per repo with linked issues</li></ul>
+                <p class="wwh-label">How</p>
+                <ul class="how-list">
+                    <li><span class="how-num hn-a">1</span>Group commits by logical change</li>
+                    <li><span class="how-num hn-a">2</span>Generate structured PR body</li>
+                    <li><span class="how-num hn-a">3</span>Link tracking issues</li>
+                    <li><span class="how-num hn-a">4</span>Open PRs on GitHub</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="flow-row">
+        <div class="st-empty"></div>
+        <div class="belt-col"><span class="flow-tag">PRs + qa-report</span></div>
+        <div class="st-empty"></div>
+        <div class="st-empty"></div>
+        <div class="st-empty"></div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════ -->
+    <!--  PHASE 3b: INTEGRATION & SHIP                          -->
+    <!-- ══════════════════════════════════════════════════════ -->
+    <div class="phase-band pb-p3b">
+        <span class="phase-band-label">Phase 3b — Integration &amp; Ship</span>
+
+        <!-- Row 1: Orchestrator PR collection -->
+        <div class="st-row">
+            <div class="st-empty"></div>
+            <div class="belt-col"><div class="belt-dot bd-green"></div></div>
+
+            <div class="st-card st-system" style="border-color: rgba(52,211,153,0.2);">
+                <span class="seq seq-s">24</span>
+                <div class="st-num" style="color:var(--green);">Orchestrator</div>
+                <h3>PR Collection</h3>
+                <p class="wwh-label">What</p>
+                <ul class="what-list"><li>Gather all repo PRs, assemble manifest</li></ul>
+                <p class="wwh-label">How</p>
+                <ul class="how-list">
+                    <li><span class="how-num hn-s">1</span>Collect PR refs from all repos</li>
+                    <li><span class="how-num hn-s">2</span>Verify all expected repos reported</li>
+                    <li><span class="how-num hn-s">3</span>Assemble PR manifest with dependency order</li>
+                </ul>
+            </div>
+
+            <div class="belt-col" style="visibility:hidden;"><div class="belt-dot"></div></div>
+            <div class="st-empty"></div>
+        </div>
+
+        <!-- Row 2: Harness + GitHub -->
+        <div class="st-row">
+            <div class="st-empty"></div>
+            <div class="belt-col" style="visibility:hidden;"><div class="belt-dot"></div></div>
+
+            <div class="st-card st-system" style="border-color: rgba(136,135,128,0.2);">
+                <span class="seq seq-x">25</span>
+                <div class="st-num" style="color:var(--text);">Harness CI/CD</div>
+                <h3>Preview &amp; E2E</h3>
+                <p class="wwh-label">What</p>
+                <ul class="what-list"><li>Combined preview environment + cross-repo E2E</li></ul>
+                <p class="wwh-label">How</p>
+                <ul class="how-list">
+                    <li><span class="how-num hn-s">1</span>Checkout all feature branches</li>
+                    <li><span class="how-num hn-s">2</span>Build combined stack → deploy preview-dev</li>
+                    <li><span class="how-num hn-s">3</span>Run cross-repo E2E: contracts, integration, perf</li>
+                </ul>
+            </div>
+
+            <div class="belt-col" style="visibility:hidden;"><div class="belt-dot"></div></div>
+            <div class="st-empty"></div>
+        </div>
+
+        <!-- Row 3: TL sign-off (high risk) + GitHub merge -->
+        <div class="st-row">
+            <div class="st-card st-human" style="border-style: dashed; border-color: rgba(167,139,250,0.15);">
+                <span class="seq seq-h">26</span>
+                <div class="st-num">Tech Lead</div>
+                <h3>High-Risk Sign-off</h3>
+                <p class="wwh-label">What</p>
+                <ul class="what-list"><li>Required for high-risk tier only</li></ul>
+                <p class="wwh-label">How</p>
+                <ul class="how-list">
+                    <li><span class="how-num hn-h">1</span>Review preview environment + E2E results</li>
+                    <li><span class="how-num hn-h">2</span>Architect + TL sign-off</li>
+                </ul>
+            </div>
+
+            <div class="belt-col"><div class="belt-dot bd-green"></div></div>
+
+            <div class="st-card st-system" style="border-color: rgba(136,135,128,0.2);">
+                <span class="seq seq-x">27</span>
+                <div class="st-num" style="color:var(--text);">GitHub</div>
+                <h3>PR Merge</h3>
+                <p class="wwh-label">What</p>
+                <ul class="what-list"><li>Dependency-ordered merge to develop</li></ul>
+                <p class="wwh-label">How</p>
+                <ul class="how-list">
+                    <li><span class="how-num hn-s">1</span>Merge Coordinator: topological sort repos</li>
+                    <li><span class="how-num hn-s">2</span>Merge PRs in dependency order</li>
+                    <li><span class="how-num hn-s">3</span>Verify per-repo CI green</li>
+                </ul>
+            </div>
+
+            <div class="belt-col" style="visibility:hidden;"><div class="belt-dot"></div></div>
+            <div class="st-empty"></div>
+        </div>
+
+        <!-- Row 4: Orchestrator finalize -->
+        <div class="st-row">
+            <div class="st-empty"></div>
+            <div class="belt-col" style="visibility:hidden;"><div class="belt-dot"></div></div>
+
+            <div class="st-card st-system" style="border-color: rgba(52,211,153,0.2);">
+                <span class="seq seq-s">28</span>
+                <div class="st-num" style="color:var(--green);">Orchestrator</div>
+                <h3>Finalize</h3>
+                <p class="wwh-label">What</p>
+                <ul class="what-list"><li>Record completion, close audit trail</li></ul>
+                <p class="wwh-label">How</p>
+                <ul class="how-list">
+                    <li><span class="how-num hn-s">1</span>Transition state: MERGING → COMPLETE</li>
+                    <li><span class="how-num hn-s">2</span>Finalize append-only audit trail</li>
+                    <li><span class="how-num hn-s">3</span>Update operating metrics</li>
+                </ul>
+            </div>
+
+            <div class="belt-col" style="visibility:hidden;"><div class="belt-dot"></div></div>
+            <div class="st-empty"></div>
+        </div>
+    </div>
+
+    <!-- Output -->
+    <div class="flow-row" style="margin-top: 8px;">
+        <div class="st-empty"></div>
+        <div class="belt-col">
+            <span class="flow-tag" style="border-color: var(--green); color: var(--green); background: var(--green-dim);">
+                ✓ merged to develop
+            </span>
+        </div>
+        <div class="st-empty"></div>
+        <div class="st-empty"></div>
+        <div class="st-empty"></div>
+    </div>
+
+</div>
+
+<!-- Escalation Callout -->
+<div class="esc-callout">
+    <div class="esc-box">
+        <span class="esc-title">Escalation Lane</span>
+        <p>At <strong>any station</strong>, when an agent hits ambiguity or risk boundaries, work routes <em>back to a human</em> rather than guessing. Escalations are a first-class path — not a failure mode.</p>
+    </div>
+</div>
+
+<p class="foot">Governed Agentic Delivery Model · v1.1 · March 2026</p>
+
+</body>
+</html>
