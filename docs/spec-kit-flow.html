@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>spec-kit Pipeline Flow — LangChain Wrapped Orchestration</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+        :root {
+            --bg: #111115;
+            --bg-card: #151518;
+            --border: #2a2a30;
+            --text: #8a8f9a;
+            --text-mid: #b0b4be;
+            --text-bright: #d4d6de;
+            --text-white: #eaecf2;
+            --text-dim: #505460;
+            --p1: #f59e0b; --p1-bright: #fbbf24; --p1-bg: #16140e; --p1-border: #5a4820; --p1-card-border: #2a2510; --p1-badge-bg: #2a1e00;
+            --p2: #a78bfa; --p2-bright: #c084fc; --p2-bg: #1the above is just example 3101e; --p2-border: #4a3a70; --p2-card-border: #28204a; --p2-badge-bg: #1a0e2e;
+            --p3a: #3b82f6; --p3a-bright: #60a5fa; --p3a-bg: #0e1220; --p3a-card-border: #1e2840;
+            --p3b: #34d399; --p3b-bright: #4ade80;
+            --pm: #38bdf8; --pm-bright: #7dd3fc; --pm-bg: #0e1420; --pm-border: #1e4070; --pm-card-border: #1a2a44; --pm-badge-bg: #0a1e3a;
+            --cyan: #22d3ee;
+            --red: #ef4444;
+            --sky: #38bdf8; --sky-bright: #7dd3fc; --sky-bg: #0a1e3a;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { background:var(--bg); color:var(--text); font-family:'Inter',-apple-system,sans-serif; font-size:11px; line-height:1.5; padding:40px 28px; }
+        .page { max-width:860px; margin:0 auto; }
+        .mono { font-family:'JetBrains Mono',monospace; }
+
+        .hdr-meta { font-family:'JetBrains Mono',monospace; font-size:8px; color:var(--text-dim); letter-spacing:2.5px; text-transform:uppercase; margin-bottom:3px; }
+        .hdr-title { font-size:22px; font-weight:800; color:var(--text-white); margin-bottom:5px; letter-spacing:-0.3px; }
+        .hdr-desc { font-size:10px; color:var(--text-dim); margin-bottom:28px; line-height:1.6; }
+
+        /* ─── VERTICAL ARROW ─── */
+        .v-arrow {
+            display:flex; flex-direction:column; align-items:center; padding:4px 0;
+        }
+        .v-arrow .va-line { width:2px; height:18px; position:relative; }
+        .v-arrow .va-line::after { content:'▾'; position:absolute; bottom:-10px; left:-4px; font-size:11px; }
+        .v-arrow.p1 .va-line { background:var(--p1); opacity:0.4; }
+        .v-arrow.p1 .va-line::after { color:var(--p1-bright); opacity:0.6; }
+        .v-arrow.pm .va-line { background:var(--pm); opacity:0.4; }
+        .v-arrow.pm .va-line::after { color:var(--pm-bright); opacity:0.6; }
+        .v-arrow.p2 .va-line { background:var(--p2); opacity:0.4; }
+        .v-arrow.p2 .va-line::after { color:var(--p2-bright); opacity:0.6; }
+        .v-arrow.p3a .va-line { background:var(--p3a); opacity:0.4; }
+        .v-arrow.p3a .va-line::after { color:var(--p3a-bright); opacity:0.6; }
+        .v-arrow.p3b .va-line { background:var(--p3b); opacity:0.4; }
+        .v-arrow.p3b .va-line::after { color:var(--p3b-bright); opacity:0.6; }
+        .v-arrow .va-lbl {
+            font-family:'JetBrains Mono',monospace; font-size:7px;
+            color:var(--text-dim); margin-top:8px;
+        }
+
+        /* ─── INTAKE ROW ─── */
+        .intake-row {
+            display:grid;
+            grid-template-columns:1fr 40px 1fr;
+            gap:0;
+            align-items:end;
+            margin-bottom:0;
+        }
+        .intake-card {
+            border-radius:8px;
+            padding:14px;
+        }
+        .intake-card.p1 { background:var(--p1-bg); border:1px solid var(--p1-border); }
+        .intake-card.pm { background:var(--pm-bg); border:1px solid var(--pm-border); }
+        .intake-badge {
+            display:inline-block; font-family:'JetBrains Mono',monospace;
+            font-size:8px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase;
+            padding:3px 10px; border-radius:3px; margin-bottom:8px;
+        }
+        .intake-badge.p1 { background:var(--p1-badge-bg); color:var(--p1-bright); }
+        .intake-badge.pm { background:var(--pm-badge-bg); color:var(--pm-bright); }
+        .intake-title {
+            font-size:13px; font-weight:700; color:var(--text-white); margin-bottom:8px;
+        }
+        .intake-files {
+            display:flex; flex-direction:column; gap:3px;
+        }
+        .intake-file {
+            display:flex; align-items:center; gap:6px;
+            font-family:'JetBrains Mono',monospace; font-size:8.5px;
+            padding:3px 8px; border-radius:3px;
+        }
+        .intake-file.p1 { color:var(--p1-bright); background:var(--p1-badge-bg); border:1px solid var(--p1-card-border); }
+        .intake-file.pm { color:var(--pm-bright); background:var(--pm-badge-bg); border:1px solid var(--pm-card-border); }
+        .intake-file .if-icon { font-size:9px; }
+        .intake-center {
+            display:flex; flex-direction:column; align-items:center; justify-content:flex-end;
+            gap:0; padding-bottom:12px;
+        }
+
+        /* ─── CONVERGENCE ─── */
+        .converge {
+            display:flex; align-items:center; gap:0; margin:4px 0;
+        }
+        .converge-arm { flex:1; height:1px; }
+        .converge-arm.left { background:linear-gradient(to right, transparent, var(--p1-border)); }
+        .converge-arm.right { background:linear-gradient(to left, transparent, var(--pm-border)); }
+        .converge-dot {
+            width:10px; height:10px; border-radius:50%;
+            border:2px solid var(--p2); background:var(--p2-bg); flex-shrink:0;
+        }
+
+        /* ─── LANGCHAIN WRAPPER ─── */
+        .lc-wrapper {
+            border:2px solid #1a3a2a;
+            border-radius:12px;
+            padding:24px 20px 20px;
+            position:relative;
+            background:rgba(34,211,238,0.01);
+            margin-top:6px;
+        }
+        .lc-label {
+            position:absolute; top:-10px; left:24px;
+            font-family:'JetBrains Mono',monospace; font-size:9px; font-weight:700;
+            color:var(--cyan); letter-spacing:2px; text-transform:uppercase;
+            background:var(--bg); padding:0 12px;
+            display:flex; align-items:center; gap:6px;
+        }
+        .lc-label .lc-dot { width:8px; height:8px; border-radius:50%; background:var(--cyan); opacity:0.6; }
+
+        .ls-strip {
+            display:flex; align-items:center; gap:8px;
+            background:rgba(34,211,238,0.03); border:1px solid rgba(34,211,238,0.1); border-radius:4px;
+            padding:6px 12px; margin-bottom:16px;
+            font-family:'JetBrains Mono',monospace; font-size:8px; color:var(--text-dim);
+        }
+        .ls-strip .ls-dot { width:6px; height:6px; border-radius:50%; background:var(--cyan); opacity:0.5; }
+
+        /* ─── VERTICAL STAGE CARD ─── */
+        .stage-card {
+            background:var(--bg);
+            border:1px solid var(--border);
+            border-radius:8px;
+            padding:16px 18px;
+            position:relative;
+            display:grid;
+            grid-template-columns:1fr auto;
+            gap:12px;
+            align-items:start;
+        }
+        .stage-card.p2 { border-color:var(--p2-card-border); }
+        .stage-card.p3a { border-color:var(--p3a-card-border); }
+        .stage-card.p3b { border-color:#243830; }
+
+        .stage-seq {
+            position:absolute; top:-10px; left:16px;
+            font-family:'JetBrains Mono',monospace; font-size:8px; font-weight:800;
+            width:20px; height:20px; border-radius:50%;
+            display:flex; align-items:center; justify-content:center;
+            border:2px solid;
+        }
+        .stage-seq.p2 { background:var(--p2-bg); color:var(--p2-bright); border-color:var(--p2); }
+        .stage-seq.p3a { background:var(--p3a-bg); color:var(--p3a-bright); border-color:var(--p3a); }
+        .stage-seq.p3b { background:#0e1610; color:var(--p3b-bright); border-color:var(--p3b); }
+
+        .stage-main { display:flex; flex-direction:column; }
+        .stage-name {
+            font-family:'JetBrains Mono',monospace;
+            font-size:12px; font-weight:700;
+            color:var(--text-white);
+            margin-bottom:4px;
+        }
+        .stage-desc {
+            font-size:9.5px; color:var(--text);
+            line-height:1.6;
+        }
+
+        .stage-meta {
+            display:flex; flex-direction:column; gap:6px;
+            align-items:flex-end;
+            min-width:160px;
+        }
+
+        /* ─── PROMPT COMPOSITION ─── */
+        .prompt-box {
+            background:rgba(255,255,255,0.02);
+            border:1px solid rgba(255,255,255,0.05);
+            border-radius:5px;
+            padding:6px 8px;
+        }
+        .prompt-label {
+            font-family:'JetBrains Mono',monospace; font-size:6.5px;
+            color:var(--text-dim); letter-spacing:1px; text-transform:uppercase;
+            margin-bottom:4px;
+        }
+        .prompt-file {
+            font-family:'JetBrains Mono',monospace; font-size:8px;
+            color:var(--text-mid); padding:1px 0;
+            display:flex; align-items:center; gap:4px;
+        }
+        .prompt-file .pf-dot { width:4px; height:4px; border-radius:50%; flex-shrink:0; }
+
+        /* Tags */
+        .tag-row { display:flex; flex-wrap:wrap; gap:3px; }
+        .tag {
+            display:inline-block; font-family:'JetBrains Mono',monospace;
+            font-size:6.5px; font-weight:600; letter-spacing:0.5px;
+            padding:2px 6px; border-radius:3px; text-transform:uppercase;
+        }
+        .tag.autonomous { background:#181e1a; color:var(--p3b); border:1px solid #243830; }
+        .tag.hitl { background:#2a2010; color:var(--p1-bright); border:1px solid #5a4820; }
+        .tag.extension { background:var(--sky-bg); color:var(--sky-bright); border:1px solid #1e4070; }
+        .tag.plugin { background:#1a0e2e; color:var(--p2-bright); border:1px solid var(--p2-card-border); }
+        .tag.core { background:var(--bg); color:var(--text-mid); border:1px solid var(--border); }
+        .tag.retry { background:#1e0a0a; color:var(--red); border:1px solid #3a1a1a; }
+
+        /* Override types */
+        .override-row { display:flex; gap:3px; flex-wrap:wrap; }
+        .ot {
+            font-family:'JetBrains Mono',monospace; font-size:6.5px;
+            padding:1px 5px; border-radius:2px;
+            border:1px solid rgba(255,255,255,0.06);
+            color:var(--text-dim);
+        }
+        .ot.active { border-color:var(--sky); color:var(--sky-bright); background:rgba(56,189,248,0.05); }
+
+        /* ─── PHASE GROUP ─── */
+        .phase-group {
+            position:relative;
+            border:1px dashed;
+            border-radius:10px;
+            padding:28px 14px 14px;
+            display:flex; flex-direction:column; gap:0;
+        }
+        .phase-group.p2 { border-color:var(--p2-border); background:rgba(167,139,250,0.02); }
+        .phase-group.p3 { border-color:var(--p3a-card-border); background:rgba(59,130,246,0.02); }
+        .phase-group-label {
+            position:absolute; top:-9px; left:16px;
+            font-family:'JetBrains Mono',monospace; font-size:7.5px; font-weight:700;
+            letter-spacing:1.5px; text-transform:uppercase;
+            padding:1px 10px; border-radius:3px;
+        }
+        .phase-group.p2 .phase-group-label { color:var(--p2-bright); background:var(--p2-bg); border:1px solid var(--p2-card-border); }
+        .phase-group.p3 .phase-group-label { color:var(--p3a-bright); background:var(--p3a-bg); border:1px solid var(--p3a-card-border); }
+
+        /* ─── CORE LOOP ─── */
+        .core-loop {
+            position:relative;
+            border:1px dashed rgba(59,130,246,0.25);
+            border-radius:8px;
+            padding:28px 8px 8px;
+        }
+        .core-loop-label {
+            position:absolute; top:-8px; left:50%; transform:translateX(-50%);
+            font-family:'JetBrains Mono',monospace; font-size:7px; font-weight:700;
+            color:var(--p3a-bright); letter-spacing:1.5px; text-transform:uppercase;
+            background:var(--p3a-bg); padding:1px 10px; white-space:nowrap;
+            border:1px solid var(--p3a-card-border); border-radius:3px;
+        }
+
+        /* ─── HITL ITERATION LOOP ─── */
+        .hitl-loop {
+            position:relative;
+            border:2px solid var(--p1-border);
+            border-radius:10px;
+            padding:28px 10px 12px;
+            background:rgba(245,158,11,0.02);
+        }
+        .hitl-loop-label {
+            position:absolute; top:-9px; left:50%; transform:translateX(-50%);
+            font-family:'JetBrains Mono',monospace; font-size:7px; font-weight:700;
+            color:var(--p1-bright); letter-spacing:1.5px; text-transform:uppercase;
+            background:var(--p1-bg); padding:1px 10px; white-space:nowrap;
+            border:1px solid var(--p1-border); border-radius:3px;
+            display:flex; align-items:center; gap:5px;
+        }
+        .hitl-loop-label .loop-icon { font-size:10px; }
+
+        .draft-artifacts {
+            display:grid;
+            grid-template-columns:1fr 1fr;
+            gap:6px;
+            margin-top:8px;
+        }
+        .draft-file {
+            display:flex; align-items:center; gap:6px;
+            font-family:'JetBrains Mono',monospace; font-size:8px;
+            padding:5px 8px; border-radius:4px;
+            background:rgba(255,255,255,0.02);
+            border:1px solid rgba(255,255,255,0.05);
+        }
+        .draft-file .df-icon { font-size:10px; flex-shrink:0; }
+        .draft-file .df-name { color:var(--text-bright); font-weight:500; }
+        .draft-file .df-status { font-size:6.5px; color:var(--p1-bright); text-transform:uppercase; letter-spacing:0.5px; margin-left:auto; }
+
+        .assumptions-box {
+            margin-top:8px;
+            background:rgba(245,158,11,0.04);
+            border:1px dashed var(--p1-border);
+            border-radius:5px;
+            padding:8px 10px;
+        }
+        .assumptions-label {
+            font-family:'JetBrains Mono',monospace; font-size:7px; font-weight:700;
+            color:var(--p1-bright); letter-spacing:1px; text-transform:uppercase;
+            margin-bottom:4px;
+        }
+        .assumption-item {
+            font-size:8.5px; color:var(--text-mid);
+            padding:2px 0; display:flex; align-items:flex-start; gap:5px;
+        }
+        .assumption-item .ai-marker {
+            font-family:'JetBrains Mono',monospace; font-size:7px; font-weight:700;
+            color:var(--p1-bright); flex-shrink:0; margin-top:1px;
+        }
+
+        .loop-flow {
+            display:flex; align-items:center; justify-content:center; gap:6px;
+            margin-top:10px; padding:6px 0;
+        }
+        .loop-step {
+            font-family:'JetBrains Mono',monospace; font-size:7.5px; font-weight:600;
+            padding:3px 10px; border-radius:12px;
+        }
+        .loop-step.draft { background:var(--p2-badge-bg); color:var(--p2-bright); border:1px solid var(--p2-card-border); }
+        .loop-step.review { background:var(--p1-badge-bg); color:var(--p1-bright); border:1px solid var(--p1-border); }
+        .loop-step.enrich { background:rgba(34,211,238,0.08); color:var(--cyan); border:1px solid rgba(34,211,238,0.2); }
+        .loop-step.approve { background:#181e1a; color:var(--p3b-bright); border:1px solid #243830; }
+        .loop-arrow {
+            font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-dim);
+        }
+        .loop-return {
+            font-family:'JetBrains Mono',monospace; font-size:7px;
+            color:var(--p1-bright); opacity:0.6;
+            text-align:center; margin-top:2px;
+        }
+
+        /* ─── PHASE TRANSITION ─── */
+        .phase-transition {
+            display:flex; align-items:center; gap:10px;
+            padding:6px 0;
+        }
+        .pt-line { flex:1; height:2px; background:linear-gradient(to right, var(--p2), var(--p3a)); opacity:0.3; }
+        .pt-label {
+            font-family:'JetBrains Mono',monospace; font-size:7.5px; font-weight:600;
+            color:var(--text-dim); white-space:nowrap;
+        }
+
+        /* ─── GATE + PLUGIN BARS ─── */
+        .gate-bar {
+            display:flex; align-items:center; gap:8px;
+            background:rgba(255,255,255,0.02); border:1px solid var(--border); border-radius:6px;
+            padding:8px 14px; margin-top:16px;
+        }
+        .gb-label {
+            font-family:'JetBrains Mono',monospace; font-size:7px; font-weight:700;
+            color:var(--text-dim); letter-spacing:1.5px; text-transform:uppercase; white-space:nowrap;
+        }
+        .gate-item { display:flex; align-items:center; gap:4px; font-family:'JetBrains Mono',monospace; font-size:8px; }
+        .gate-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+        .gate-dot.continue { background:var(--p3b); }
+        .gate-dot.refine { background:var(--p3a); }
+        .gate-dot.escalate { background:var(--p1); }
+
+        .plugin-strip {
+            display:flex; align-items:center; gap:10px;
+            background:rgba(167,139,250,0.02); border:1px dashed var(--p2-card-border); border-radius:6px;
+            padding:8px 14px; margin-top:10px;
+        }
+        .ps-label {
+            font-family:'JetBrains Mono',monospace; font-size:7px; font-weight:700;
+            color:var(--p2-bright); letter-spacing:1.5px; text-transform:uppercase; white-space:nowrap;
+        }
+        .plugin-item {
+            display:flex; flex-direction:column; gap:1px;
+            background:var(--bg); border:1px solid var(--border); border-radius:4px;
+            padding:4px 8px;
+        }
+        .plugin-item .pi-name { font-family:'JetBrains Mono',monospace; font-size:7px; font-weight:600; color:var(--text-bright); }
+        .plugin-item .pi-fallback { font-size:6.5px; color:var(--text-dim); font-style:italic; }
+
+        /* ─── LEGEND ─── */
+        .legend {
+            display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+            margin-top:20px; padding:10px 14px;
+            background:rgba(255,255,255,0.02); border-radius:6px;
+        }
+        .legend-label {
+            font-family:'JetBrains Mono',monospace; font-size:7px; font-weight:700;
+            color:var(--text-dim); letter-spacing:1.5px; text-transform:uppercase;
+        }
+        .legend-item { display:flex; align-items:center; gap:4px; }
+        .legend-item .li-text { font-size:8px; color:var(--text); }
+
+        .footer {
+            text-align:center; margin-top:20px;
+            font-family:'JetBrains Mono',monospace; font-size:7px; color:var(--text-dim);
+        }
+    </style>
+</head>
+<body>
+<div class="page">
+
+    <div class="hdr-meta">SPEC-KIT PIPELINE · GOVERNED AGENTIC DELIVERY</div>
+    <div class="hdr-title">spec-kit Flow — LangChain Wrapped Orchestration</div>
+    <div class="hdr-desc">
+        Vertical flow: intake agents → spec-kit pipeline → execution · showing prompt composition files at each stage ·
+        all stages overridable per product (CLI / Script / Module / NoOp)
+    </div>
+
+    <!-- ════════════════════════════════════════════ -->
+    <!--  INTAKE: Planning Agent + Maintenance Agent  -->
+    <!-- ════════════════════════════════════════════ -->
+    <div class="intake-row">
+        <!-- Planning Agent -->
+        <div class="intake-card p1">
+            <div class="intake-badge p1">PLANNING AGENT</div>
+            <div class="intake-title">feature-0000X.md</div>
+            <div class="intake-files">
+                <div class="intake-file p1"><span class="if-icon">📄</span> feature-0000X.md</div>
+                <div class="intake-file p1"><span class="if-icon">🎨</span> ux.md</div>
+            </div>
+        </div>
+
+        <!-- Center convergence -->
+        <div class="intake-center">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--text-dim);letter-spacing:1px;writing-mode:vertical-rl;transform:rotate(180deg);margin-bottom:6px;">CONVERGE</div>
+        </div>
+
+        <!-- Maintenance Agent -->
+        <div class="intake-card pm">
+            <div class="intake-badge pm">MAINTENANCE AGENT</div>
+            <div class="intake-title">maintenance-0000X.md</div>
+            <div class="intake-files">
+                <div class="intake-file pm"><span class="if-icon">📄</span> maintenance-0000X.md</div>
+                <div class="intake-file pm"><span class="if-icon">🔍</span> scan-report.json</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Convergence line -->
+    <div class="converge">
+        <div class="converge-arm left"></div>
+        <div class="converge-dot"></div>
+        <div class="converge-arm right"></div>
+    </div>
+
+    <!-- ════════════════════════════════════════════ -->
+    <!--  LANGCHAIN WRAPPED PIPELINE                  -->
+    <!-- ════════════════════════════════════════════ -->
+    <div class="lc-wrapper">
+        <div class="lc-label"><span class="lc-dot"></span> LANGCHAIN ORCHESTRATOR · DECISION LOOP</div>
+
+        <div class="ls-strip">
+            <span class="ls-dot"></span>
+            <span style="color:var(--cyan);font-weight:600;">LANGSMITH</span>
+            <span>· every agent invocation is a traceable run · cost tracking · decision audit</span>
+        </div>
+
+        <!-- ══ PHASE 2: TECH DESIGN ══ -->
+        <!-- Each slash command scaffolds an artifact, then you refine conversationally with the agent -->
+        <div class="phase-group p2">
+            <div class="phase-group-label">PHASE 2 · TECH DESIGN — SLASH COMMANDS SCAFFOLD, CONVERSATION REFINES</div>
+
+            <!-- 1. /speckit.constitution -->
+            <div class="stage-card p2">
+                <span class="stage-seq p2">1</span>
+                <div class="stage-main">
+                    <div class="stage-name">/speckit.constitution</div>
+                    <div class="stage-desc">
+                        Load governance rules · Seed Context Edge · Validate spec structure
+                    </div>
+                    <div class="tag-row" style="margin-top:6px;">
+                        <span class="tag core">run once · no iteration</span>
+                    </div>
+                </div>
+                <div class="stage-meta">
+                    <div class="prompt-box">
+                        <div class="prompt-label">Loaded from Delivery Workspace</div>
+                        <div class="prompt-file"><span class="pf-dot" style="background:var(--p3b);"></span> .speckit/constitution.md <span style="color:var(--text-dim);font-size:7px;">· set at product registration</span></div>
+                        <div class="prompt-file"><span class="pf-dot" style="background:var(--p3b);"></span> product overrides (optional)</div>
+                    </div>
+                    <div class="override-row">
+                        <span class="ot active">CLI</span><span class="ot">Script</span><span class="ot">Module</span><span class="ot">NoOp</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="v-arrow p2"><div class="va-line"></div><div class="va-lbl">governance context</div></div>
+
+            <!-- 2. /speckit.specify -->
+            <div class="hitl-loop">
+                <div class="hitl-loop-label"><span class="loop-icon">💬</span> SCAFFOLD → CONVERSATION → REFINE</div>
+                <div class="stage-card p2">
+                    <span class="stage-seq p2">2</span>
+                    <div class="stage-main">
+                        <div class="stage-name">/speckit.specify <span style="font-family:'JetBrains Mono',monospace;font-size:7px;font-weight:600;color:var(--p3b-bright);background:#181e1a;border:1px solid #243830;border-radius:3px;padding:1px 5px;margin-left:4px;vertical-align:middle;">OUR EXTENSION</span></div>
+                        <div class="stage-desc">
+                            Scaffolds design artifacts from feature/maintenance spec + constitution ·
+                            acceptance-criteria.md · architecture.md · qa-tests.md ·
+                            Then refine conversationally until each artifact is complete
+                        </div>
+                        <div class="tag-row" style="margin-top:6px;">
+                            <span class="tag hitl">HITL · conversational</span>
+                            <span class="tag extension">Extension point</span>
+                            <span class="tag plugin">Plugin: Context Edge</span>
+                        </div>
+                    </div>
+                    <div class="stage-meta">
+                        <div class="prompt-box">
+                            <div class="prompt-label">Prompt composed from</div>
+                            <div class="prompt-file"><span class="pf-dot" style="background:var(--p1);"></span> feature-0000X.md <span style="color:var(--text-dim);">or</span> <span style="color:var(--pm);">maintenance-0000X.md</span></div>
+                            <div class="prompt-file"><span class="pf-dot" style="background:var(--p1);"></span> ux.md <span style="color:var(--text-dim);font-size:7px;">· from Planning Agent</span></div>
+                            <div class="prompt-file"><span class="pf-dot" style="background:var(--p2);"></span> constitution context (from step 1)</div>
+                            <div class="prompt-file"><span class="pf-dot" style="background:var(--cyan);"></span> Context Edge: repo patterns, deps</div>
+                        </div>
+                        <div class="override-row">
+                            <span class="ot active">CLI</span><span class="ot active">Script</span><span class="ot active">Module</span><span class="ot">NoOp</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="draft-artifacts">
+                    <div class="draft-file"><span class="df-icon">📋</span><span class="df-name">acceptance-criteria.md</span><span class="df-status">scaffolded → refined</span></div>
+                    <div class="draft-file"><span class="df-icon">🏗️</span><span class="df-name">architecture.md</span><span class="df-status">scaffolded → refined</span></div>
+                    <div class="draft-file"><span class="df-icon">🎨</span><span class="df-name">ux.md</span><span class="df-status" style="color:var(--p1-bright);">from Planning Agent</span></div>
+                    <div class="draft-file"><span class="df-icon">🧪</span><span class="df-name">qa-tests.md</span><span class="df-status">scaffolded → refined</span></div>
+                </div>
+            </div>
+
+            <div class="v-arrow p2"><div class="va-line"></div><div class="va-lbl">artifacts drafted</div></div>
+
+            <!-- 3. /speckit.clarify -->
+            <div class="hitl-loop">
+                <div class="hitl-loop-label"><span class="loop-icon">💬</span> SCAFFOLD → CONVERSATION → REFINE</div>
+                <div class="stage-card p2">
+                    <span class="stage-seq p2">3</span>
+                    <div class="stage-main">
+                        <div class="stage-name">/speckit.clarify</div>
+                        <div class="stage-desc">
+                            Scaffolds targeted questions about ambiguities ·
+                            Focus on security, performance, cross-cutting concerns ·
+                            Refine conversationally until all gaps resolved
+                        </div>
+                        <div class="tag-row" style="margin-top:6px;">
+                            <span class="tag hitl">HITL · conversational</span>
+                            <span class="tag extension">Extension point</span>
+                        </div>
+                    </div>
+                    <div class="stage-meta">
+                        <div class="prompt-box">
+                            <div class="prompt-label">Prompt composed from</div>
+                            <div class="prompt-file"><span class="pf-dot" style="background:var(--p2);"></span> all artifacts from step 2</div>
+                            <div class="prompt-file"><span class="pf-dot" style="background:var(--p2);"></span> constitution context</div>
+                            <div class="prompt-file"><span class="pf-dot" style="background:var(--cyan);"></span> Context Edge: cross-repo deps</div>
+                        </div>
+                        <div class="override-row">
+                            <span class="ot active">CLI</span><span class="ot">Script</span><span class="ot active">Module</span><span class="ot active">NoOp</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="v-arrow p2"><div class="va-line"></div><div class="va-lbl">clarified spec</div></div>
+
+            <!-- 4. /speckit.checklist -->
+            <div class="hitl-loop">
+                <div class="hitl-loop-label"><span class="loop-icon">💬</span> SCAFFOLD → CONVERSATION → REFINE</div>
+                <div class="stage-card p2">
+                    <span class="stage-seq p2">4</span>
+                    <div class="stage-main">
+                        <div class="stage-name">/speckit.checklist</div>
+                        <div class="stage-desc">
+                            Scaffolds validation checklist · NFR review: Security, Observability,
+                            Performance, Accessibility, Data/Privacy ·
+                            Refine conversationally until spec is complete
+                        </div>
+                        <div class="tag-row" style="margin-top:6px;">
+                            <span class="tag hitl">HITL · conversational</span>
+                            <span class="tag extension">Extension point</span>
+                        </div>
+                    </div>
+                    <div class="stage-meta">
+                        <div class="prompt-box">
+                            <div class="prompt-label">Validates against</div>
+                            <div class="prompt-file"><span class="pf-dot" style="background:var(--p2);"></span> acceptance-criteria.md</div>
+                            <div class="prompt-file"><span class="pf-dot" style="background:var(--p2);"></span> architecture.md</div>
+                            <div class="prompt-file"><span class="pf-dot" style="background:var(--p2);"></span> qa-tests.md</div>
+                            <div class="prompt-file"><span class="pf-dot" style="background:var(--p2);"></span> constitution rules</div>
+                        </div>
+                        <div class="override-row">
+                            <span class="ot active">CLI</span><span class="ot">Script</span><span class="ot active">Module</span><span class="ot active">NoOp</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="v-arrow p2"><div class="va-line"></div><div class="va-lbl">spec validated</div></div>
+
+            <!-- 5. /speckit.plan -->
+            <div class="hitl-loop">
+                <div class="hitl-loop-label"><span class="loop-icon">💬</span> SCAFFOLD → CONVERSATION → REFINE</div>
+                <div class="stage-card p2" style="border-color:var(--p2);">
+                    <span class="stage-seq p2">5</span>
+                    <div class="stage-main">
+                        <div class="stage-name">/speckit.plan</div>
+                        <div class="stage-desc">
+                            Scaffolds technical implementation plan ·
+                            System design, task scoping, architectural boundaries ·
+                            Refine conversationally · Output: <span class="mono" style="color:var(--p2-bright);">plan.md</span>
+                        </div>
+                        <div class="tag-row" style="margin-top:6px;">
+                            <span class="tag hitl">HITL · Tech Lead approves</span>
+                            <span class="tag extension">Extension point</span>
+                        </div>
+                    </div>
+                    <div class="stage-meta">
+                        <div class="prompt-box">
+                            <div class="prompt-label">Prompt composed from</div>
+                            <div class="prompt-file"><span class="pf-dot" style="background:var(--p2);"></span> all validated artifacts</div>
+                            <div class="prompt-file"><span class="pf-dot" style="background:var(--p2);"></span> constitution context</div>
+                            <div class="prompt-file"><span class="pf-dot" style="background:var(--cyan);"></span> Context Edge: repo graph + patterns</div>
+                        </div>
+                        <div class="override-row">
+                            <span class="ot active">CLI</span><span class="ot active">Script</span><span class="ot active">Module</span><span class="ot">NoOp</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Phase transition -->
+        <div class="phase-transition">
+            <div class="pt-line"></div>
+            <div class="pt-label">plan.md approved → Orchestrator dispatches → autonomous until complete or escalated</div>
+            <div class="pt-line"></div>
+        </div>
+
+        <!-- ══ PHASE 3: AUTONOMOUS EXECUTION ══ -->
+        <div class="phase-group p3">
+            <div class="phase-group-label">PHASE 3 · AUTONOMOUS EXECUTION — RUNS TO COMPLETION ONCE DISPATCHED</div>
+
+            <!-- 6. analyze -->
+            <div class="stage-card p3a">
+                <span class="stage-seq p3a">6</span>
+                <div class="stage-main">
+                    <div class="stage-name">speckit.analyze</div>
+                    <div class="stage-desc">
+                        Validate plan ↔ spec consistency · Detect blocking issues ·
+                        Verify dependencies resolved · Escalate or proceed
+                    </div>
+                    <div class="tag-row" style="margin-top:6px;">
+                        <span class="tag autonomous">Fully autonomous</span>
+                        <span class="tag extension">Extension point</span>
+                    </div>
+                </div>
+                <div class="stage-meta">
+                    <div class="prompt-box">
+                        <div class="prompt-label">Prompt composed from</div>
+                        <div class="prompt-file"><span class="pf-dot" style="background:var(--p2);"></span> plan.md</div>
+                        <div class="prompt-file"><span class="pf-dot" style="background:var(--p2);"></span> acceptance-criteria.md</div>
+                        <div class="prompt-file"><span class="pf-dot" style="background:var(--p2);"></span> architecture.md</div>
+                        <div class="prompt-file"><span class="pf-dot" style="background:var(--p2);"></span> constitution context</div>
+                        <div class="prompt-file"><span class="pf-dot" style="background:var(--cyan);"></span> Context Edge enrichment (MCP)</div>
+                    </div>
+                    <div class="override-row">
+                        <span class="ot active">CLI</span><span class="ot">Script</span><span class="ot active">Module</span><span class="ot active">NoOp</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="v-arrow p3a"><div class="va-line"></div><div class="va-lbl">validated plan</div></div>
+
+            <!-- 7. tasks -->
+            <div class="stage-card p3a">
+                <span class="stage-seq p3a">7</span>
+                <div class="stage-main">
+                    <div class="stage-name">speckit.tasks</div>
+                    <div class="stage-desc">
+                        Decompose plan into ordered tasks · Scope per repository ·
+                        Map cross-repo dependencies · Output: <span class="mono" style="color:var(--p3a-bright);">tasks.json</span>
+                    </div>
+                    <div class="tag-row" style="margin-top:6px;">
+                        <span class="tag autonomous">Fully autonomous</span>
+                        <span class="tag extension">Extension point</span>
+                        <span class="tag plugin">Plugin: Task Queue</span>
+                    </div>
+                </div>
+                <div class="stage-meta">
+                    <div class="prompt-box">
+                        <div class="prompt-label">Prompt composed from</div>
+                        <div class="prompt-file"><span class="pf-dot" style="background:var(--p2);"></span> plan.md</div>
+                        <div class="prompt-file"><span class="pf-dot" style="background:var(--p2);"></span> acceptance-criteria.md</div>
+                        <div class="prompt-file"><span class="pf-dot" style="background:var(--p2);"></span> architecture.md</div>
+                        <div class="prompt-file"><span class="pf-dot" style="background:var(--cyan);"></span> Context Edge: repo graph</div>
+                    </div>
+                    <div class="override-row">
+                        <span class="ot active">CLI</span><span class="ot active">Script</span><span class="ot active">Module</span><span class="ot">NoOp</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="v-arrow p3a"><div class="va-line"></div><div class="va-lbl">tasks.json</div></div>
+
+            <!-- 8. implement (CORE LOOP) -->
+            <div class="core-loop">
+                <div class="core-loop-label">CORE LOOP · PER TASK · MAX 3 RETRIES</div>
+                <div class="stage-card p3a">
+                    <span class="stage-seq p3a">8</span>
+                    <div class="stage-main">
+                        <div class="stage-name">speckit.implement</div>
+                        <div class="stage-desc">
+                            Construct enriched prompt (spec + Context Edge data) ·
+                            Drive OpenCode CLI → code + tests ·
+                            Quality gate per task: continue / auto-refine (≤3) / escalate
+                        </div>
+                        <div class="tag-row" style="margin-top:6px;">
+                            <span class="tag autonomous">Fully autonomous</span>
+                            <span class="tag retry">Max 3 retries</span>
+                            <span class="tag plugin">Plugin: Quality Runner</span>
+                            <span class="tag plugin">Plugin: Context Edge</span>
+                        </div>
+                    </div>
+                    <div class="stage-meta">
+                        <div class="prompt-box">
+                            <div class="prompt-label">Prompt composed from</div>
+                            <div class="prompt-file"><span class="pf-dot" style="background:var(--p3a);"></span> current task (from tasks.json)</div>
+                            <div class="prompt-file"><span class="pf-dot" style="background:var(--p2);"></span> qa-tests.md + acceptance-criteria.md</div>
+                            <div class="prompt-file"><span class="pf-dot" style="background:var(--p2);"></span> architecture.md + constitution</div>
+                            <div class="prompt-file"><span class="pf-dot" style="background:var(--cyan);"></span> Context Edge: patterns, deps, prior runs</div>
+                        </div>
+                        <div class="override-row">
+                            <span class="ot active">CLI</span><span class="ot active">Script</span><span class="ot active">Module</span><span class="ot">NoOp</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="v-arrow p3b"><div class="va-line"></div><div class="va-lbl">PRs ready</div></div>
+
+            <!-- 9. taskstoissues -->
+            <div class="stage-card p3b">
+                <span class="stage-seq p3b">9</span>
+                <div class="stage-main">
+                    <div class="stage-name">speckit.taskstoissues <span style="font-family:'JetBrains Mono',monospace;font-size:7px;font-weight:600;color:var(--p3b-bright);background:#181e1a;border:1px solid #243830;border-radius:3px;padding:1px 5px;margin-left:4px;vertical-align:middle;">OUR EXTENSION</span></div>
+                    <div class="stage-desc">
+                        Create tracking issues · Link to completed tasks ·
+                        Compose PRs per repo · Output: <span class="mono" style="color:var(--p3b-bright);">PRs + linked issues</span>
+                    </div>
+                    <div class="tag-row" style="margin-top:6px;">
+                        <span class="tag autonomous">Fully autonomous</span>
+                        <span class="tag extension">Extension point</span>
+                        <span class="tag plugin">Plugin: PR Composer</span>
+                    </div>
+                </div>
+                <div class="stage-meta">
+                    <div class="prompt-box">
+                        <div class="prompt-label">Prompt composed from</div>
+                        <div class="prompt-file"><span class="pf-dot" style="background:var(--p3a);"></span> completed tasks + diffs</div>
+                        <div class="prompt-file"><span class="pf-dot" style="background:var(--p2);"></span> acceptance-criteria.md</div>
+                        <div class="prompt-file"><span class="pf-dot" style="background:var(--p3a);"></span> qa-report</div>
+                    </div>
+                    <div class="override-row">
+                        <span class="ot active">CLI</span><span class="ot active">Script</span><span class="ot active">Module</span><span class="ot active">NoOp</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- QUALITY GATE BAR -->
+        <div class="gate-bar">
+            <div class="gb-label">Quality Gates</div>
+            <div style="width:1px;height:14px;background:var(--border);"></div>
+            <div class="gate-item"><span class="gate-dot continue"></span><span class="gi-text" style="color:var(--text);">Continue</span></div>
+            <div class="gate-item"><span class="gate-dot refine"></span><span class="gi-text" style="color:var(--text);">Auto-refine (≤3)</span></div>
+            <div class="gate-item"><span class="gate-dot escalate"></span><span class="gi-text" style="color:var(--text);">Escalate → HITL</span></div>
+        </div>
+
+        <!-- PLUGIN LAYER -->
+        <div class="plugin-strip">
+            <div class="ps-label">Plugins (optional)</div>
+            <div style="width:1px;height:20px;background:var(--border);"></div>
+            <div class="plugin-item"><span class="pi-name">Task Queue</span><span class="pi-fallback">fallback: sequential</span></div>
+            <div class="plugin-item"><span class="pi-name">Quality Runner</span><span class="pi-fallback">fallback: full suite</span></div>
+            <div class="plugin-item"><span class="pi-name">PR Composer</span><span class="pi-fallback">fallback: basic PR</span></div>
+            <div class="plugin-item"><span class="pi-name">Context Edge</span><span class="pi-fallback">fallback: null (spec-only)</span></div>
+        </div>
+
+    </div><!-- /lc-wrapper -->
+
+    <!-- LEGEND -->
+    <div class="legend">
+        <div class="legend-label">Legend</div>
+        <div style="width:1px;height:12px;background:var(--border);"></div>
+        <div class="legend-item"><span class="tag autonomous" style="font-size:7px;">Fully autonomous</span><span class="li-text">No human needed</span></div>
+        <div class="legend-item"><span class="tag hitl" style="font-size:7px;">HITL in Phase 2</span><span class="li-text">Human-assisted during drafting</span></div>
+        <div class="legend-item"><span class="tag extension" style="font-size:7px;">Extension point</span><span class="li-text">Overridable per product</span></div>
+        <div class="legend-item"><span class="tag plugin" style="font-size:7px;">Plugin</span><span class="li-text">Optional with fallback</span></div>
+        <div class="legend-item"><span class="tag retry" style="font-size:7px;">Max 3 retries</span><span class="li-text">Then escalates</span></div>
+        <div class="legend-item"><span class="pf-dot" style="width:6px;height:6px;border-radius:50%;background:var(--cyan);display:inline-block;"></span><span class="li-text">Context Edge (MCP)</span></div>
+    </div>
+
+    <div class="footer">spec-kit Pipeline · Governed Agentic Delivery · v1.1 · April 2026</div>
+
+</div>
+</body>
+</html>

@@ -36,6 +36,13 @@
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+
+        /* Highlight target station on anchor navigation */
+        .st-card:target {
+            box-shadow: 0 0 0 2px rgba(255,255,255,0.15), 0 0 20px rgba(255,255,255,0.05);
+            transition: box-shadow 0.3s ease;
+        }
 
         body {
             background: var(--bg);
@@ -156,6 +163,54 @@
         .dc-icon-blue  { background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(59,130,246,0.3); }
         .dc-icon-sky   { background: var(--sky-dim); color: var(--sky); border: 1px solid rgba(56,189,248,0.3); }
         .dc-icon-gray  { background: rgba(136,135,128,0.08); color: var(--text); border: 1px solid rgba(136,135,128,0.2); }
+
+        /* Station annotation links inside deployed-component cards */
+        .dc-stations {
+            margin-top: 10px;
+            padding-top: 8px;
+            border-top: 1px solid var(--border);
+        }
+        .dc-stations-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.52rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text);
+            margin-bottom: 5px;
+        }
+        .dc-station-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            align-items: center;
+        }
+        .dc-station-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.55rem;
+            font-weight: 700;
+            min-width: 22px;
+            height: 22px;
+            padding: 0 4px;
+            border-radius: 50%;
+            text-decoration: none;
+            border: 2px solid;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .dc-station-link:hover {
+            transform: scale(1.2);
+            box-shadow: 0 0 10px rgba(255,255,255,0.08);
+        }
+        .dsl-h { background: var(--purple-dim); color: var(--purple); border-color: var(--purple); }
+        .dsl-s { background: var(--cyan-dim); color: var(--cyan); border-color: var(--cyan); }
+        .dsl-a { background: var(--blue-dim); color: var(--blue); border-color: var(--blue); }
+        .dsl-x { background: rgba(136,135,128,0.1); color: var(--text-mid); border-color: var(--text); }
+        .dsl-green { background: var(--green-dim); color: var(--green); border-color: var(--green); }
+        .dsl-amber { background: var(--amber-dim); color: var(--amber); border-color: var(--amber); }
+        .dsl-sky { background: var(--sky-dim); color: var(--sky); border-color: var(--sky); }
 
         /* Connection annotations */
         .dc-connections {
@@ -574,6 +629,15 @@
             <div class="dc-conn"><span class="arrow" style="color:var(--text)">↔</span> GitHub (webhooks + PR merge)</div>
             <div class="dc-conn"><span class="arrow" style="color:var(--text)">→</span> Harness (preview trigger + CI)</div>
         </div>
+        <div class="dc-stations">
+            <div class="dc-stations-label">Delivery Line Stations</div>
+            <div class="dc-station-links">
+                <a href="#station-2" class="dc-station-link dsl-s" title="Job Registration">2</a>
+                <a href="#station-10" class="dc-station-link dsl-s" title="Bundle &amp; Dispatch">10</a>
+                <a href="#station-24" class="dc-station-link dsl-green" title="PR Collection">24</a>
+                <a href="#station-28" class="dc-station-link dsl-green" title="Finalize">28</a>
+            </div>
+        </div>
     </div>
 
     <!-- Context Server -->
@@ -588,6 +652,13 @@
         <div class="dc-connections">
             <div class="dc-conn"><span class="arrow" style="color:var(--cyan)">←</span> Orchestrator (job state, escalation log)</div>
             <div class="dc-conn"><span class="arrow" style="color:var(--blue)">↔</span> Context Edge (snapshot + write-back)</div>
+        </div>
+        <div class="dc-stations">
+            <div class="dc-stations-label">Delivery Line Stations</div>
+            <div class="dc-station-links">
+                <a href="#station-0d" class="dc-station-link dsl-amber" title="Graph Setup">0d</a>
+                <a href="#station-11" class="dc-station-link dsl-amber" title="Graph Enrichment">11</a>
+            </div>
         </div>
     </div>
 
@@ -606,6 +677,12 @@
             <div class="dc-conn"><span class="arrow" style="color:var(--blue)">→</span> Delivery Workspace (repo provisioning)</div>
             <div class="dc-conn"><span class="arrow" style="color:var(--amber)">→</span> Context Server (graph seeding)</div>
         </div>
+        <div class="dc-stations">
+            <div class="dc-stations-label">Delivery Line Stations</div>
+            <div class="dc-station-links">
+                <a href="#station-0b" class="dc-station-link dsl-h" title="Product Provisioning">0b</a>
+            </div>
+        </div>
     </div>
 
     <!-- Product Delivery Client -->
@@ -622,6 +699,17 @@
             <div class="dc-conn"><span class="arrow" style="color:var(--cyan)">↔</span> Orchestrator API (REST + WebSocket)</div>
             <div class="dc-conn"><span class="arrow" style="color:var(--blue)">→</span> spec-kit CLI bridge</div>
         </div>
+        <div class="dc-stations">
+            <div class="dc-stations-label">Delivery Line Stations</div>
+            <div class="dc-station-links">
+                <a href="#station-0a" class="dc-station-link dsl-h" title="Product Registration">0a</a>
+                <a href="#station-1" class="dc-station-link dsl-h" title="Submit feature.md">1</a>
+                <a href="#station-8" class="dc-station-link dsl-h" title="Artifact Authoring &amp; Review">8</a>
+                <a href="#station-9" class="dc-station-link dsl-h" title="Approval Gate">9</a>
+                <a href="#station-21" class="dc-station-link dsl-h" title="Escalation Handler">21</a>
+                <a href="#station-26" class="dc-station-link dsl-h" title="High-Risk Sign-off">26</a>
+            </div>
+        </div>
     </div>
 
     <!-- Delivery Workspace -->
@@ -635,6 +723,12 @@
         <div class="dc-role">Product identity — specs, configuration, agent overrides, constitution rules, workspace file. Config for the Execution Environment.</div>
         <div class="dc-connections">
             <div class="dc-conn"><span class="arrow" style="color:var(--blue)">→</span> Defines Execution Environment</div>
+        </div>
+        <div class="dc-stations">
+            <div class="dc-stations-label">Delivery Line Stations</div>
+            <div class="dc-station-links">
+                <a href="#station-0c" class="dc-station-link dsl-s" title="Workspace Setup">0c</a>
+            </div>
         </div>
     </div>
 
@@ -652,6 +746,24 @@
             <div class="dc-conn"><span class="arrow" style="color:var(--amber)">↔</span> Context Edge (MCP sidecar)</div>
             <div class="dc-conn"><span class="arrow" style="color:var(--text)">→</span> GitHub (PRs) · LLM (code gen)</div>
         </div>
+        <div class="dc-stations">
+            <div class="dc-stations-label">Delivery Line Stations</div>
+            <div class="dc-station-links">
+                <a href="#station-3" class="dc-station-link dsl-s" title="Load Governance Rules">3</a>
+                <a href="#station-4" class="dc-station-link dsl-s" title="Feature-Specific Governance">4</a>
+                <a href="#station-5" class="dc-station-link dsl-s" title="Spec Consistency (HITL)">5</a>
+                <a href="#station-6" class="dc-station-link dsl-s" title="Draft Artifacts">6</a>
+                <a href="#station-12" class="dc-station-link dsl-s" title="Spec Consistency (Auto)">12</a>
+                <a href="#station-13" class="dc-station-link dsl-s" title="Task Decomposition">13</a>
+                <a href="#station-14" class="dc-station-link dsl-a" title="Task Agent">14</a>
+                <a href="#station-15" class="dc-station-link dsl-s" title="Quality Checklist">15</a>
+                <a href="#station-17" class="dc-station-link dsl-s" title="Code Generation">17</a>
+                <a href="#station-18" class="dc-station-link dsl-a" title="OpenCode + LLM">18</a>
+                <a href="#station-20" class="dc-station-link dsl-a" title="Validation">20</a>
+                <a href="#station-22" class="dc-station-link dsl-s" title="Tracking Issues">22</a>
+                <a href="#station-23" class="dc-station-link dsl-a" title="PR Composition">23</a>
+            </div>
+        </div>
     </div>
 
     <!-- Context Edge -->
@@ -665,6 +777,12 @@
         <div class="dc-role">Fast local graph queries inside the DevContainer. Buffers writes, flushes to Context Server on teardown. Degrades gracefully (stale/null modes).</div>
         <div class="dc-connections">
             <div class="dc-conn"><span class="arrow" style="color:var(--amber)">↔</span> Context Server (sync + flush)</div>
+        </div>
+        <div class="dc-stations">
+            <div class="dc-stations-label">Delivery Line Stations</div>
+            <div class="dc-station-links">
+                <a href="#station-16" class="dc-station-link dsl-amber" title="Local Graph (MCP)">16</a>
+            </div>
         </div>
     </div>
 
@@ -682,6 +800,12 @@
             <div class="dc-conn"><span class="arrow" style="color:var(--text)">←</span> Harness (builds + deploys)</div>
             <div class="dc-conn"><span class="arrow" style="color:var(--text)">←</span> GitHub (feature branches)</div>
         </div>
+        <div class="dc-stations">
+            <div class="dc-stations-label">Delivery Line Stations</div>
+            <div class="dc-station-links">
+                <a href="#station-25" class="dc-station-link dsl-x" title="Preview &amp; E2E">25</a>
+            </div>
+        </div>
     </div>
 
     <!-- Maintenance Agent -->
@@ -695,6 +819,12 @@
         <div class="dc-role">System immune system — scans codebase, triages findings, generates spec-kit maintenance bundles for human approval.</div>
         <div class="dc-connections">
             <div class="dc-conn"><span class="arrow" style="color:var(--cyan)">→</span> Orchestrator (registers bundles)</div>
+        </div>
+        <div class="dc-stations">
+            <div class="dc-stations-label">Delivery Line Stations</div>
+            <div class="dc-station-links">
+                <span style="font-size:0.52rem; color:var(--text); font-style:italic;">Post-delivery · cron/weekly</span>
+            </div>
         </div>
     </div>
 
@@ -721,6 +851,15 @@
             <div class="ext-item">
                 <span class="ext-name">Scanners</span>
                 <span class="ext-desc">Qodana · Snyk<br>SonarQube</span>
+            </div>
+        </div>
+        <div class="dc-stations">
+            <div class="dc-stations-label">Delivery Line Stations</div>
+            <div class="dc-station-links">
+                <a href="#station-7" class="dc-station-link dsl-x" title="GitHub Models (Drafting)">7</a>
+                <a href="#station-19" class="dc-station-link dsl-x" title="GitHub Models (Code Gen)">19</a>
+                <a href="#station-25" class="dc-station-link dsl-x" title="Harness Preview &amp; E2E">25</a>
+                <a href="#station-27" class="dc-station-link dsl-x" title="GitHub PR Merge">27</a>
             </div>
         </div>
     </div>
@@ -759,7 +898,7 @@
 
         <!-- 0a: Product Delivery Client + 0b: Product Delivery Manager (BE) -->
         <div class="st-row">
-            <div class="st-card st-human" style="border-style: dashed;">
+            <div class="st-card st-human" id="station-0a" style="border-style: dashed;">
                 <span class="seq seq-h" style="opacity:0.6;">0a</span>
                 <div class="st-num">Product Delivery Client</div>
                 <h3>Product Registration</h3>
@@ -774,7 +913,7 @@
 
             <div class="belt-col"><div class="belt-dot bd-amber"></div></div>
 
-            <div class="st-card st-system" style="border-style: dashed; border-color: rgba(167,139,250,0.2);">
+            <div class="st-card st-system" id="station-0b" style="border-style: dashed; border-color: rgba(167,139,250,0.2);">
                 <span class="seq seq-s" style="opacity:0.6;">0b</span>
                 <div class="st-num" style="color:var(--purple);">Product Delivery Manager</div>
                 <h3>Product Provisioning</h3>
@@ -798,7 +937,7 @@
             <div class="st-empty"></div>
             <div class="belt-col" style="visibility:hidden;"><div class="belt-dot"></div></div>
 
-            <div class="st-card st-system" style="border-style: dashed;">
+            <div class="st-card st-system" id="station-0c" style="border-style: dashed;">
                 <span class="seq seq-s" style="opacity:0.6;">0c</span>
                 <div class="st-num">Delivery Workspace</div>
                 <h3>Workspace Setup</h3>
@@ -815,7 +954,7 @@
 
             <div class="belt-col" style="visibility:hidden;"><div class="belt-dot"></div></div>
 
-            <div class="st-card st-system" style="border-style: dashed; border-color: rgba(245,158,11,0.2);">
+            <div class="st-card st-system" id="station-0d" style="border-style: dashed; border-color: rgba(245,158,11,0.2);">
                 <span class="seq seq-s" style="opacity:0.6;">0d</span>
                 <div class="st-num" style="color:var(--amber);">Context Server</div>
                 <h3>Graph Setup</h3>
@@ -846,7 +985,7 @@
 
         <!-- Row 1: PM submits + Planning Agent (upstream context) -->
         <div class="st-row">
-            <div class="st-card st-human">
+            <div class="st-card st-human" id="station-1">
                 <span class="seq seq-h">1</span>
                 <div class="st-num">Product Manager</div>
                 <h3>Submit feature.md</h3>
@@ -882,7 +1021,7 @@
             <div class="st-empty"></div>
             <div class="belt-col"><div class="belt-dot bd-amber"></div></div>
 
-            <div class="st-card st-system">
+            <div class="st-card st-system" id="station-2">
                 <span class="seq seq-s">2</span>
                 <div class="st-num">Orchestrator</div>
                 <h3>Job Registration</h3>
@@ -920,7 +1059,7 @@
             <div class="st-empty"></div>
             <div class="belt-col"><div class="belt-dot bd-purple"></div></div>
 
-            <div class="st-card st-system">
+            <div class="st-card st-system" id="station-3">
                 <span class="seq seq-s">3</span>
                 <div class="st-num">speckit.constitution</div>
                 <h3>Load Governance Rules</h3>
@@ -943,7 +1082,7 @@
             <div class="st-empty"></div>
             <div class="belt-col" style="visibility:hidden;"><div class="belt-dot"></div></div>
 
-            <div class="st-card st-system" style="border-style: dashed;">
+            <div class="st-card st-system" id="station-4" style="border-style: dashed;">
                 <span class="seq seq-s">4</span>
                 <div class="st-num">Constitution Enrichment</div>
                 <h3>Feature-Specific Governance</h3>
@@ -967,7 +1106,7 @@
             <div class="st-empty"></div>
             <div class="belt-col" style="visibility:hidden;"><div class="belt-dot"></div></div>
 
-            <div class="st-card st-system">
+            <div class="st-card st-system" id="station-5">
                 <span class="seq seq-s">5</span>
                 <div class="st-num">speckit.analyze</div>
                 <h3>Spec Consistency</h3>
@@ -990,7 +1129,7 @@
             <div class="st-empty"></div>
             <div class="belt-col" style="visibility:hidden;"><div class="belt-dot"></div></div>
 
-            <div class="st-card st-system">
+            <div class="st-card st-system" id="station-6">
                 <span class="seq seq-s">6</span>
                 <div class="st-num">Execution Environment</div>
                 <h3>Draft Artifacts</h3>
@@ -1018,7 +1157,7 @@
             <div class="st-empty"></div>
             <div class="belt-col" style="visibility:hidden;"><div class="belt-dot"></div></div>
 
-            <div class="st-card st-system" style="border-color: rgba(136,135,128,0.2);">
+            <div class="st-card st-system" id="station-7" style="border-color: rgba(136,135,128,0.2);">
                 <span class="seq seq-x">7</span>
                 <div class="st-num" style="color:var(--text);">LLM Provider</div>
                 <h3>GitHub Models</h3>
@@ -1037,7 +1176,7 @@
 
         <!-- Row 5: Human authoring — review system drafts + author specialist artifacts -->
         <div class="st-row">
-            <div class="st-card st-human">
+            <div class="st-card st-human" id="station-8">
                 <span class="seq seq-h">8</span>
                 <div class="st-num">Product Delivery Client</div>
                 <h3>Artifact Authoring &amp; Review</h3>
@@ -1066,7 +1205,7 @@
 
         <!-- Row 6: Approval gate (human) -->
         <div class="st-row" style="margin-top: 4px;">
-            <div class="st-card st-human">
+            <div class="st-card st-human" id="station-9">
                 <span class="seq seq-h">9</span>
                 <div class="st-num">Product Delivery Client</div>
                 <h3>Approval Gate</h3>
@@ -1107,7 +1246,7 @@
             <div class="st-empty"></div>
             <div class="belt-col"><div class="belt-dot bd-cyan"></div></div>
 
-            <div class="st-card st-system">
+            <div class="st-card st-system" id="station-10">
                 <span class="seq seq-s">10</span>
                 <div class="st-num">Orchestrator</div>
                 <h3>Bundle &amp; Dispatch</h3>
@@ -1130,7 +1269,7 @@
             <div class="st-empty"></div>
             <div class="belt-col" style="visibility:hidden;"><div class="belt-dot"></div></div>
 
-            <div class="st-card st-system" style="border-color: rgba(245,158,11,0.2);">
+            <div class="st-card st-system" id="station-11" style="border-color: rgba(245,158,11,0.2);">
                 <span class="seq seq-s">11</span>
                 <div class="st-num" style="color:var(--amber);">Context Server</div>
                 <h3>Graph Enrichment</h3>
@@ -1168,7 +1307,7 @@
             <div class="st-empty"></div>
             <div class="belt-col"><div class="belt-dot bd-blue"></div></div>
 
-            <div class="st-card st-system">
+            <div class="st-card st-system" id="station-12">
                 <span class="seq seq-s">12</span>
                 <div class="st-num">speckit.analyze</div>
                 <h3>Spec Consistency</h3>
@@ -1191,7 +1330,7 @@
             <div class="st-empty"></div>
             <div class="belt-col" style="visibility:hidden;"><div class="belt-dot"></div></div>
 
-            <div class="st-card st-system">
+            <div class="st-card st-system" id="station-13">
                 <span class="seq seq-s">13</span>
                 <div class="st-num">speckit.tasks</div>
                 <h3>Task Decomposition</h3>
@@ -1208,7 +1347,7 @@
 
             <div class="belt-col" style="visibility:hidden;"><div class="belt-dot"></div></div>
 
-            <div class="st-card st-agent">
+            <div class="st-card st-agent" id="station-14">
                 <span class="seq seq-a">14</span>
                 <div class="st-num">Task Agent</div>
                 <h3>LangChain Orchestration</h3>
@@ -1226,7 +1365,7 @@
             <div class="st-empty"></div>
             <div class="belt-col" style="visibility:hidden;"><div class="belt-dot"></div></div>
 
-            <div class="st-card st-system">
+            <div class="st-card st-system" id="station-15">
                 <span class="seq seq-s">15</span>
                 <div class="st-num">speckit.checklist</div>
                 <h3>Quality Checklist</h3>
@@ -1242,7 +1381,7 @@
 
             <div class="belt-col" style="visibility:hidden;"><div class="belt-dot"></div></div>
 
-            <div class="st-card st-system" style="border-color: rgba(245,158,11,0.2);">
+            <div class="st-card st-system" id="station-16" style="border-color: rgba(245,158,11,0.2);">
                 <span class="seq seq-s">16</span>
                 <div class="st-num" style="color:var(--amber);">Context Edge</div>
                 <h3>Local Graph (MCP)</h3>
@@ -1261,7 +1400,7 @@
             <div class="st-empty"></div>
             <div class="belt-col" style="visibility:hidden;"><div class="belt-dot"></div></div>
 
-            <div class="st-card st-system">
+            <div class="st-card st-system" id="station-17">
                 <span class="seq seq-s">17</span>
                 <div class="st-num">speckit.implement</div>
                 <h3>Code Generation</h3>
@@ -1278,7 +1417,7 @@
 
             <div class="belt-col" style="visibility:hidden;"><div class="belt-dot"></div></div>
 
-            <div class="st-card st-agent">
+            <div class="st-card st-agent" id="station-18">
                 <span class="seq seq-a">18</span>
                 <div class="st-num">Execution Agent</div>
                 <h3>OpenCode + LLM</h3>
@@ -1296,7 +1435,7 @@
             <div class="st-empty"></div>
             <div class="belt-col" style="visibility:hidden;"><div class="belt-dot"></div></div>
 
-            <div class="st-card st-system" style="border-color: rgba(136,135,128,0.2);">
+            <div class="st-card st-system" id="station-19" style="border-color: rgba(136,135,128,0.2);">
                 <span class="seq seq-x">19</span>
                 <div class="st-num" style="color:var(--text);">LLM Provider</div>
                 <h3>GitHub Models</h3>
@@ -1311,7 +1450,7 @@
 
             <div class="belt-col" style="visibility:hidden;"><div class="belt-dot"></div></div>
 
-            <div class="st-card st-agent">
+            <div class="st-card st-agent" id="station-20">
                 <span class="seq seq-a">20</span>
                 <div class="st-num">Test Agent</div>
                 <h3>Validation</h3>
@@ -1329,7 +1468,7 @@
 
         <!-- spec-kit Emit: taskstoissues + Review Agent + Developer -->
         <div class="st-row">
-            <div class="st-card st-human" style="border-style: dashed; border-color: rgba(167,139,250,0.15);">
+            <div class="st-card st-human" id="station-21" style="border-style: dashed; border-color: rgba(167,139,250,0.15);">
                 <span class="seq seq-h">21</span>
                 <div class="st-num">Developer</div>
                 <h3>Escalation Handler</h3>
@@ -1345,7 +1484,7 @@
 
             <div class="belt-col" style="visibility:hidden;"><div class="belt-dot"></div></div>
 
-            <div class="st-card st-system">
+            <div class="st-card st-system" id="station-22">
                 <span class="seq seq-s">22</span>
                 <div class="st-num">speckit.taskstoissues</div>
                 <h3>Tracking Issues</h3>
@@ -1361,7 +1500,7 @@
 
             <div class="belt-col" style="visibility:hidden;"><div class="belt-dot"></div></div>
 
-            <div class="st-card st-agent">
+            <div class="st-card st-agent" id="station-23">
                 <span class="seq seq-a">23</span>
                 <div class="st-num">Review Agent</div>
                 <h3>PR Composition</h3>
@@ -1397,7 +1536,7 @@
             <div class="st-empty"></div>
             <div class="belt-col"><div class="belt-dot bd-green"></div></div>
 
-            <div class="st-card st-system" style="border-color: rgba(52,211,153,0.2);">
+            <div class="st-card st-system" id="station-24" style="border-color: rgba(52,211,153,0.2);">
                 <span class="seq seq-s">24</span>
                 <div class="st-num" style="color:var(--green);">Orchestrator</div>
                 <h3>PR Collection</h3>
@@ -1420,7 +1559,7 @@
             <div class="st-empty"></div>
             <div class="belt-col" style="visibility:hidden;"><div class="belt-dot"></div></div>
 
-            <div class="st-card st-system" style="border-color: rgba(136,135,128,0.2);">
+            <div class="st-card st-system" id="station-25" style="border-color: rgba(136,135,128,0.2);">
                 <span class="seq seq-x">25</span>
                 <div class="st-num" style="color:var(--text);">Harness CI/CD</div>
                 <h3>Preview &amp; E2E</h3>
@@ -1440,7 +1579,7 @@
 
         <!-- Row 3: TL sign-off (high risk) + GitHub merge -->
         <div class="st-row">
-            <div class="st-card st-human" style="border-style: dashed; border-color: rgba(167,139,250,0.15);">
+            <div class="st-card st-human" id="station-26" style="border-style: dashed; border-color: rgba(167,139,250,0.15);">
                 <span class="seq seq-h">26</span>
                 <div class="st-num">Tech Lead</div>
                 <h3>High-Risk Sign-off</h3>
@@ -1455,7 +1594,7 @@
 
             <div class="belt-col"><div class="belt-dot bd-green"></div></div>
 
-            <div class="st-card st-system" style="border-color: rgba(136,135,128,0.2);">
+            <div class="st-card st-system" id="station-27" style="border-color: rgba(136,135,128,0.2);">
                 <span class="seq seq-x">27</span>
                 <div class="st-num" style="color:var(--text);">GitHub</div>
                 <h3>PR Merge</h3>
@@ -1478,7 +1617,7 @@
             <div class="st-empty"></div>
             <div class="belt-col" style="visibility:hidden;"><div class="belt-dot"></div></div>
 
-            <div class="st-card st-system" style="border-color: rgba(52,211,153,0.2);">
+            <div class="st-card st-system" id="station-28" style="border-color: rgba(52,211,153,0.2);">
                 <span class="seq seq-s">28</span>
                 <div class="st-num" style="color:var(--green);">Orchestrator</div>
                 <h3>Finalize</h3>

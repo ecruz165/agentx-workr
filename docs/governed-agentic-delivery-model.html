@@ -108,6 +108,62 @@
         /* ─── PHASE 1 (AMBER) ─── */
         .p1-box { background:var(--p1-bg); border:2px solid var(--p1-border); border-radius:8px; padding:16px; }
         .stages { display:grid; grid-template-columns:1fr auto 1fr auto 1fr auto 1fr; gap:0; align-items:stretch; }
+
+        /* ─── 2-box horizontal flow for intake row ─── */
+        .two-box-flow {
+            display:grid;
+            grid-template-columns:1fr 36px 1fr;
+            gap:0;
+            align-items:center;
+        }
+        /* Reversed flow: transition artifact on left, arrow center, process on right */
+        .two-box-flow.reverse { grid-template-columns:1fr 36px 1fr; }
+        .two-box-flow.reverse .flow-box-process { grid-column:3; grid-row:1; }
+        .two-box-flow.reverse .flow-box-arrow { grid-column:2; grid-row:1; }
+        .two-box-flow.reverse .flow-box-artifact { grid-column:1; grid-row:1; }
+
+        .flow-arrow {
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+            justify-content:center;
+            font-family:'JetBrains Mono',monospace;
+            font-size:14px;
+            opacity:0.5;
+        }
+        .flow-arrow .fa-lbl {
+            font-size:7px;
+            letter-spacing:0.3px;
+            color:var(--text-dim);
+            margin-top:2px;
+        }
+        .flow-arrow.p1-clr { color:var(--p1); }
+        .flow-arrow.pm-clr { color:var(--pm); }
+
+        /* Transition artifact wrapper */
+        .trans-wrap {
+            position:relative;
+            border:2px solid;
+            border-radius:8px;
+            padding:22px 14px 14px;
+        }
+        .trans-wrap.p1-clr { border-color:var(--p1); box-shadow:0 0 12px rgba(245,158,11,0.06); }
+        .trans-wrap.pm-clr { border-color:var(--pm); box-shadow:0 0 12px rgba(56,189,248,0.06); }
+        .trans-wrap .trans-label-abs {
+            position:absolute; top:-9px; left:14px;
+            font-family:'JetBrains Mono',monospace; font-size:8px;
+            letter-spacing:2.5px; text-transform:uppercase;
+            padding:0 8px;
+        }
+        .trans-wrap.p1-clr .trans-label-abs { color:var(--p1); background:var(--p1-bg); }
+        .trans-wrap.pm-clr .trans-label-abs { color:var(--pm); background:var(--pm-bg); }
+
+        /* Phase M cards — mirrors s1-card structure with PM colors */
+        .sm-card { background:var(--pm-card-bg); border:1px solid var(--pm-card-border); border-radius:6px; padding:10px 11px; }
+        .sm-card ul { list-style:none; margin-bottom:6px; }
+        .sm-card li { font-size:9.5px; color:var(--text); padding:2px 0; display:flex; align-items:flex-start; gap:6px; }
+        .sm-card li .bul { color:var(--pm); flex-shrink:0; font-size:9.5px; line-height:1.45; }
+        .sm-card .out-label { font-family:'JetBrains Mono',monospace; font-size:8px; color:var(--pm-bright); margin-top:8px; font-weight:600; }
         .s1-card { background:var(--p1-card-bg); border:1px solid var(--p1-card-border); border-radius:6px; padding:10px 11px; }
         .s1-card.lit { border-color:#6a5a20; box-shadow:0 0 16px rgba(245,158,11,0.08); }
         .stage-num { font-family:'JetBrains Mono',monospace; font-size:7px; color:var(--text-dim); letter-spacing:1.5px; text-transform:uppercase; margin-bottom:2px; }
@@ -254,14 +310,65 @@
 
         /* ─── MAIN GRID LAYOUT ─── */
         .main-grid {
+            display:flex;
+            flex-direction:column;
+            gap:14px;
+        }
+        .main-grid .g-full { min-width:0; }
+
+        /* Phase 1 + Phase M side by side */
+        .intake-row {
             display:grid;
-            grid-template-columns:2fr 1fr;
-            gap:24px;
+            grid-template-columns:1fr 1fr;
+            gap:16px;
             align-items:start;
         }
-        .main-grid .g-left { grid-column:1; grid-row:1; min-width:0; display:flex; flex-direction:column; gap:14px; }
-        .main-grid .g-pm { grid-column:2; grid-row:1; min-width:0; align-self:stretch; }
-        .main-grid .g-full { grid-column:1 / -1; min-width:0; }
+        .intake-row .g-p1 { min-width:0; }
+        .intake-row .g-pm { min-width:0; }
+
+        /* Ensure both phase box headers align — fixed height prevents text-wrap differences */
+        .intake-row .p1-box > div:first-child,
+        .intake-row .pm-box > div:first-child {
+            min-height:48px;
+        }
+
+        /* Convergence visual between intake row and Phase 2 */
+        .converge-bar {
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            gap:12px;
+            padding:6px 0;
+        }
+        .converge-arm {
+            flex:1;
+            height:1px;
+            position:relative;
+        }
+        .converge-arm.left {
+            background:linear-gradient(to right, transparent, var(--p1-border));
+        }
+        .converge-arm.right {
+            background:linear-gradient(to left, transparent, var(--pm-border));
+        }
+        .converge-dot {
+            width:12px; height:12px; border-radius:50%;
+            border:2px solid var(--p2);
+            background:var(--p2-bg);
+            flex-shrink:0;
+        }
+        .converge-label {
+            font-family:'JetBrains Mono',monospace;
+            font-size:13px; font-weight:700;
+            color:var(--text-white);
+            letter-spacing:2px;
+            text-transform:uppercase;
+            white-space:nowrap;
+            padding:8px 22px;
+            background:var(--bg);
+            border:1px solid var(--border);
+            border-radius:20px;
+        }
 
 
         /* ─── ORCHESTRATOR ─── */
@@ -501,6 +608,9 @@
         body.light .trans-label { background:var(--p2-bg); }
         body.light .pm-trans-label { background:var(--pm-bg); }
         body.light .p2-hc-dot { background:var(--p2-bg); }
+        body.light .converge-label { background:var(--bg); border-color:var(--border); color:var(--text-white); }
+        body.light .converge-arm.left { background:linear-gradient(to right, transparent, var(--p1-border)); }
+        body.light .converge-arm.right { background:linear-gradient(to left, transparent, var(--pm-border)); }
 
         /* Toggle button */
         .mode-toggle {
@@ -549,68 +659,149 @@
     <div class="hdr-title">Governed Agentic Delivery Model</div>
     <div style="font-size:13px;color:var(--text-bright);margin-bottom:8px;font-weight:400;letter-spacing:-0.1px;">Spec-Kit-driven delivery with HITL checkpoints before and after autonomous execution</div>
     <div class="hdr-desc">
-        Three distinct phases with explicit handoffs · <span class="hl-o">Planning Agent + HITL</span> shapes meaning →
-        <span class="fw600" style="color:var(--p2-bright);">Tech Design via github/spec-kit + FeatureOutlook</span> produces execution-safe artifacts →
-        <span style="color:var(--p3a-bright);">Autonomous Execution</span> builds and ships ·
-        <span style="color:var(--pm);">Maintenance Agent</span> runs in parallel
+        <span class="hl-o">Product Agent</span> and <span style="color:var(--pm);">Maintenance Agent</span> run independently ·
+        both converge on <span class="fw600" style="color:var(--p2-bright);">spec-kit wrapped Tech Design</span> ·
+        <span style="color:var(--p3a-bright);">autonomous execution</span> builds and ships ·
+        <span style="color:var(--pm);">low-risk maintenance</span> flows end-to-end without HITL
     </div>
 
     <div class="main-grid">
 
-        <!-- LEFT COLUMN -->
-        <div class="g-left">
-            <div class="p1-box">
-                <div class="phase-hdr">
-                    <div><span class="badge p1">PHASE 1 · PLANNING AGENT + HITL</span><div class="phase-sub">• HITL — HUMANS GOVERN</div></div>
-                    <div class="section-right">Product · meaning is still being shaped</div>
-                </div>
-                <div class="stages">
-                    <div class="s1-card">
-                        <div class="src-label">SOURCES</div>
-                        <div class="stage-t"><span class="stage-icon">🔍</span> Discovery</div>
-                        <div style="display:flex;flex-direction:column;gap:3px;margin-top:6px;">
-                            <div class="src-item"><span class="src-dot"></span><span class="src-tag">Collaboration Tools</span></div>
-                            <div class="src-item"><span class="src-dot"></span><span class="src-tag">Documentation Systems</span></div>
-                            <div class="src-item"><span class="src-dot"></span><span class="src-tag">Issue Trackers</span></div>
+        <!-- INTAKE ROW: Phase 1 (L→R) + Phase M (R→L) side by side -->
+        <div class="intake-row">
+
+            <!-- PHASE 1: L → R -->
+            <div class="g-p1">
+                <div class="p1-box">
+                    <div style="margin-bottom:14px;">
+                        <span class="badge p1">PHASE 1 · PLANNING AGENT</span>
+                        <div class="phase-sub">SEPARATE PROCESS · MS OFFICE AGENT COPILOT · REGISTERS JOBS WITH ORCHESTRATOR</div>
+                    </div>
+                    <div class="two-box-flow">
+                        <div class="s1-card" style="position:relative;padding-top:20px;">
+                            <div style="position:absolute;top:-9px;left:14px;font-family:'JetBrains Mono',monospace;font-size:7px;font-weight:700;color:var(--p1-bright);letter-spacing:2px;text-transform:uppercase;background:var(--p1-bg);padding:1px 8px;border:1px solid var(--p1-card-border);border-radius:3px;">START →</div>
+                            <div class="stage-num">DISCOVERY + INTAKE</div>
+                            <div class="stage-t">🔍 Discover & Specify</div>
+                            <ul>
+                                <li><span class="bul">•</span> Distill from Slack, Confluence, Jira</li>
+                                <li><span class="bul">•</span> Extract intent, detect duplicates</li>
+                                <li><span class="bul">•</span> Agent surfaces gaps, human refines</li>
+                                <li><span class="bul">•</span> Ambiguities resolved inline</li>
+                            </ul>
+                            <div style="margin-top:6px;"><span style="font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--p1-bright);background:var(--p1-badge-bg);border-radius:3px;padding:2px 7px;">MS Office Copilot</span></div>
+                        </div>
+                        <div class="flow-arrow p1-clr"><span>→</span><div class="fa-lbl">curated</div></div>
+                        <div class="trans-wrap p1-clr">
+                            <div class="trans-label-abs">TRANSITION ARTIFACT(S)</div>
+                            <div class="s1-card" style="border:none;padding:0;background:transparent;">
+                                <div class="stage-num">OUTPUT</div>
+                                <div class="stage-t">📋 feature-0000X.md</div>
+                                <ul>
+                                    <li><span class="bul">•</span> Curated feature specification</li>
+                                    <li><span class="bul">•</span> Feature type tagged</li>
+                                    <li><span class="bul">•</span> Risk metadata attached</li>
+                                    <li><span class="bul">•</span> Register job with Orchestrator</li>
+                                </ul>
+                            </div>
                         </div>
                     </div>
-                    <div class="arrow-col"><div class="arrow-line"></div><div class="arrow-lbl">distill</div></div>
-                    <div class="s1-card">
-                        <div class="stage-num">STAGE 01</div>
-                        <div class="stage-t"><span class="stage-icon">⚙️</span> Feature Intake</div>
-                        <ul><li><span class="bul">•</span> Distill from raw context</li><li><span class="bul">•</span> Extract intent signals</li><li><span class="bul">•</span> Detect duplicates</li></ul>
-                        <div class="out-label">Output: <span class="out-val">feature.md</span></div>
+                </div>
+            </div><!-- /g-p1 -->
+
+            <!-- PHASE M: R → L (reversed) -->
+            <div class="g-pm">
+                <div class="pm-box">
+                    <div style="margin-bottom:14px;">
+                        <span class="badge pm">PHASE M · MAINTENANCE AGENT</span>
+                        <div class="phase-sub">SEPARATE PROCESS · SCHEDULED · FULLY AUTONOMOUS · REGISTERS JOBS WITH ORCHESTRATOR</div>
                     </div>
-                    <div class="arrow-col"><div class="arrow-line"></div><div class="arrow-lbl">feature.md</div></div>
-                    <div class="s1-card">
-                        <div class="stage-num">STAGE 02</div>
-                        <div class="stage-t"><span class="stage-icon pencil">✏️</span> Specify</div>
-                        <ul><li><span class="bul">•</span> Agent surfaces gaps</li><li><span class="bul">•</span> Human refines scope</li><li><span class="bul">•</span> Confirms boundaries</li></ul>
-                        <div class="out-label">Output: <span class="out-val">specified feature.md</span></div>
+                    <div class="two-box-flow reverse">
+                        <div class="sm-card flow-box-process" style="position:relative;padding-top:20px;">
+                            <div style="position:absolute;top:-9px;right:14px;font-family:'JetBrains Mono',monospace;font-size:7px;font-weight:700;color:var(--pm-bright);letter-spacing:2px;text-transform:uppercase;background:var(--pm-bg);padding:1px 8px;border:1px solid var(--pm-card-border);border-radius:3px;">← START</div>
+                            <div class="stage-num" style="color:var(--text-dim);">SCAN + TRIAGE</div>
+                            <div class="stage-t" style="color:var(--text-white);">🕐 Scan & Assess</div>
+                            <ul>
+                                <li><span class="bul">•</span> Cron-triggered scanner run</li>
+                                <li><span class="bul">•</span> Severity scoring + dedup</li>
+                                <li><span class="bul">•</span> Risk assessment per finding</li>
+                            </ul>
+                            <div style="margin-top:6px;display:flex;gap:3px;flex-wrap:wrap;"><span style="font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--pm-bright);background:var(--pm-badge-bg);border-radius:3px;padding:2px 7px;">Qodana</span><span style="font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--pm-bright);background:var(--pm-badge-bg);border-radius:3px;padding:2px 7px;">Snyk</span><span style="font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--pm-bright);background:var(--pm-badge-bg);border-radius:3px;padding:2px 7px;">SonarQube</span></div>
+                            <div style="margin-top:5px;display:flex;gap:4px;flex-wrap:wrap;">
+                                <span style="font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--p3b);background:#181e1a;border-radius:3px;padding:2px 7px;">Low → auto-approve</span>
+                                <span style="font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--p1-bright);background:var(--p1-badge-bg);border-radius:3px;padding:2px 7px;">Med/High → HITL</span>
+                            </div>
+                        </div>
+                        <div class="flow-arrow pm-clr flow-box-arrow"><span>←</span><div class="fa-lbl">assessed</div></div>
+                        <div class="trans-wrap pm-clr flow-box-artifact">
+                            <div class="trans-label-abs">TRANSITION ARTIFACT(S)</div>
+                            <div class="sm-card" style="border:none;padding:0;background:transparent;">
+                                <div class="stage-num" style="color:var(--text-dim);">OUTPUT</div>
+                                <div class="stage-t" style="color:var(--text-white);">📋 maintenance-0000X.md</div>
+                                <ul>
+                                    <li><span class="bul">•</span> Bug fix specs per issue</li>
+                                    <li><span class="bul">•</span> Dependency upgrade paths</li>
+                                    <li><span class="bul">•</span> Convention violation fixes</li>
+                                    <li><span class="bul">•</span> Register job with Orchestrator</li>
+                                </ul>
+                            </div>
+                        </div>
                     </div>
-                    <div class="arrow-col"><div class="arrow-line"></div><div class="arrow-lbl">draft</div></div>
-                    <div class="s1-card">
-                        <div class="stage-num">STAGE 03</div>
-                        <div class="stage-t"><span class="stage-icon">💬</span> Clarify</div>
-                        <ul><li><span class="bul">•</span> Agent asks questions</li><li><span class="bul">•</span> Human answers inline</li><li><span class="bul">•</span> Ambiguities resolved</li></ul>
-                        <div class="out-label">Output: <span class="out-val">clarified feature.md</span></div>
-                        <div class="conv-btn"><span class="cb-icon">⚙️</span> registers job with Orchestrator</div>
+                </div>
+            </div><!-- /g-pm -->
+
+        </div><!-- /intake-row -->
+
+        <!-- CONVERGENCE: Phase 1 + Phase M → Phase 2 -->
+        <div class="g-full">
+            <div class="converge-bar">
+                <div class="converge-arm left"></div>
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <div style="display:flex;align-items:center;gap:5px;font-family:'JetBrains Mono',monospace;font-size:7.5px;">
+                        <span style="width:6px;height:6px;border-radius:50%;background:var(--p1-bright);display:inline-block;"></span>
+                        <span style="color:var(--p1-bright);">feature-0000X.md</span>
+                    </div>
+                    <span class="converge-label">TECH DESIGN HANDOFF <span style="font-weight:400;opacity:0.7;letter-spacing:0.5px;">· SPEC-KIT WRAPPED ORCHESTRATION</span></span>
+                    <div style="display:flex;align-items:center;gap:5px;font-family:'JetBrains Mono',monospace;font-size:7.5px;">
+                        <span style="color:var(--pm);">maintenance-0000X.md</span>
+                        <span style="width:6px;height:6px;border-radius:50%;background:var(--pm);display:inline-block;"></span>
+                    </div>
+                </div>
+                <div class="converge-arm right"></div>
+            </div>
+            <!-- spec-kit pipeline flow with phase labels -->
+            <div style="display:flex;align-items:flex-end;justify-content:center;gap:0;margin-top:8px;flex-wrap:wrap;">
+                <!-- Phase 2 group -->
+                <div style="display:flex;flex-direction:column;align-items:center;gap:3px;">
+                    <span style="font-family:'JetBrains Mono',monospace;font-size:7px;font-weight:700;color:var(--p2-bright);letter-spacing:1.5px;text-transform:uppercase;">PHASE 2 · TECH DESIGN</span>
+                    <div style="display:flex;align-items:center;gap:0;">
+                        <a href="factory-floor/factory-floor.html#station-3" style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;color:var(--p2-bright);background:var(--p2-badge-bg);border:1px solid var(--p2-card-border);border-radius:4px;padding:5px 12px;text-decoration:none;transition:opacity 0.15s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">speckit.constitution</a>
+                        <span style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text-dim);padding:0 5px;">→</span>
+                        <a href="factory-floor/factory-floor.html#station-5" style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;color:var(--p2-bright);background:var(--p2-badge-bg);border:1px solid var(--p2-card-border);border-radius:4px;padding:5px 12px;text-decoration:none;transition:opacity 0.15s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">speckit.analyze</a>
+                    </div>
+                </div>
+                <span style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text-dim);padding:0 5px;">→</span>
+                <!-- Phase 3 group -->
+                <div style="display:flex;flex-direction:column;align-items:center;gap:3px;">
+                    <span style="font-family:'JetBrains Mono',monospace;font-size:7px;font-weight:700;color:var(--p3a-bright);letter-spacing:1.5px;text-transform:uppercase;">PHASE 3 · AUTONOMOUS EXECUTION</span>
+                    <div style="display:flex;align-items:center;gap:0;">
+                        <a href="factory-floor/factory-floor.html#station-13" style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;color:var(--p3a-bright);background:#181c24;border:1px solid var(--p3a-card-border);border-radius:4px;padding:5px 12px;text-decoration:none;transition:opacity 0.15s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">speckit.tasks</a>
+                        <span style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text-dim);padding:0 5px;">→</span>
+                        <a href="factory-floor/factory-floor.html#station-15" style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;color:var(--p3a-bright);background:#181c24;border:1px solid var(--p3a-card-border);border-radius:4px;padding:5px 12px;text-decoration:none;transition:opacity 0.15s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">speckit.checklist</a>
+                        <span style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text-dim);padding:0 5px;">→</span>
+                        <a href="factory-floor/factory-floor.html#station-17" style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;color:var(--p3a-bright);background:#181c24;border:1px solid var(--p3a-card-border);border-radius:4px;padding:5px 12px;text-decoration:none;transition:opacity 0.15s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">speckit.implement</a>
+                        <span style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text-dim);padding:0 5px;">→</span>
+                        <a href="factory-floor/factory-floor.html#station-22" style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;color:var(--p3b-bright);background:#181e1a;border:1px solid #243830;border-radius:4px;padding:5px 12px;text-decoration:none;transition:opacity 0.15s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">speckit.taskstoissues</a>
                     </div>
                 </div>
             </div>
+        </div>
 
-
-            <!-- Handoff bar: P1 → P2 -->
-            <div style="display:flex;align-items:center;gap:12px;background:var(--p1-bg);border-radius:6px;padding:10px 16px;">
-                <div style="font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;color:var(--p1-bright);letter-spacing:1.5px;text-transform:uppercase;white-space:nowrap;">HANDOFF → TECH DESIGN</div>
-                <div style="width:1px;height:18px;background:var(--p1-card-border);flex-shrink:0;"></div>
-                <div style="font-size:8.5px;color:var(--text-bright);">curated feature.md passed to VS Code / FeatureOutlook</div>
-                <div style="margin-left:auto;display:inline-block;padding:2px 9px;background:var(--bg-card);border:1px solid var(--p1-card-border);border-radius:3px;font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--p1-bright);">feature.md</div>
-            </div>
+        <!-- PHASE 2: TECH DESIGN (full width, receives both pipelines) -->
+        <div class="g-full">
             <div class="p2-box">
                 <div class="phase-hdr">
                     <div><span class="badge p2">PHASE 2 · TECH DESIGN</span><div class="phase-sub">🔧 VS CODE · BUILT ON <span style="color:var(--p2-bright);">github/spec-kit</span> · EXTENDED BY <span style="color:var(--p2-bright);">FEATUREOUTLOOK</span> — HUMAN-LED, AGENT-ASSISTED</div></div>
-                    <div class="section-right">Tech Design Team + Specialists · FeatureOutlook + spec-kit · produces execution-safe artifacts</div>
+                    <div class="section-right">Human-led, agent-assisted · produces execution-safe plan.md per job</div>
                 </div>
                 <!-- spec-kit foundation strip -->
                 <div style="display:flex;align-items:center;gap:10px;background:var(--p2-card-bg);border:1px solid var(--p2-card-border);border-radius:5px;padding:7px 12px;margin-bottom:12px;">
@@ -681,7 +872,7 @@
                             <div class="plan-pill"><span class="pp-dot"></span> Tasks scoped per repo</div>
                             <div class="plan-pill"><span class="pp-dot"></span> Arch boundary set</div>
                             <div class="plan-pill"><span class="pp-dot"></span> Architect sign-off</div>
-                            <div class="gate-badge"><span class="gb-label">Gate:</span> <span class="gb-val">Architect approves via FeatureOutlook · PR merge triggers Orchestrator</span></div>
+                            <div class="gate-badge"><span class="gb-label">Gate:</span> <span class="gb-val">Tech Lead approves PR to trigger Orchestrator</span></div>
                         </div>
                     </div>
                 </div>
@@ -697,60 +888,6 @@
                         <div class="sk-col"><h4>Core — required for all features</h4><div><span class="ftag core">feature.md</span><span class="ftag core">acceptance-criteria.md</span><span class="ftag core">architecture.md</span><span class="ftag core">ux.md</span><span class="ftag core">qa-tests.md</span></div><div class="sk-note">These exist for all artifacts automatically — no code change, just a schema entry in the manifest</div></div>
                         <div class="sk-col"><h4>Conditional by feature type</h4><div class="cond-row"><span class="k">api-change</span> → integration.md + security.md</div><div class="cond-row"><span class="k">ui-component</span> → ux.md + accessibility.md</div><div class="cond-row"><span class="k">data-migration</span> → migration.md + performance.md</div><div class="cond-row"><span class="k">infra-change</span> → observability.md + security.md</div></div>
                         <div class="sk-col"><h4>Extension candidates</h4><div class="ext-grid"><span class="ftag ext">security.md</span><span class="ftag ext">integration.md</span><span class="ftag ext">performance.md</span><span class="ftag ext">accessibility.md</span><span class="ftag ext">migration.md</span><span class="ftag ext">observability.md</span><span class="ftag hl">ops.md</span><span class="ftag ext">change-control.md</span></div><div class="sk-note">+ others — org specific</div></div>
-                    </div>
-                </div>
-            </div>
-        </div><!-- /g-left -->
-
-        <!-- PHASE M -->
-        <div class="g-pm">
-            <div class="pm-box">
-                <div style="margin-bottom:10px;">
-                    <span class="badge pm">PHASE M · MAINTENANCE AGENT</span>
-                    <div class="phase-sub">🔄 SCHEDULED · AGENT-DRIVEN · HITL GATED · <span style="color:var(--pm-bright);">SPEC-KIT WRAPPED</span></div>
-                </div>
-                <!-- spec-kit strip in Phase M -->
-                <div style="display:flex;align-items:center;gap:10px;background:var(--pm-card-bg);border:1px solid var(--pm-card-border);border-radius:5px;padding:7px 12px;margin-bottom:10px;">
-                    <span style="font-size:10px;">🐙</span>
-                    <span style="font-family:'JetBrains Mono',monospace;font-size:7.5px;font-weight:700;color:var(--pm-bright);letter-spacing:1.5px;text-transform:uppercase;">SPEC-KIT</span>
-                    <span style="font-size:8px;color:var(--text-dim);">maintenance preset · acceptance-criteria + qa-tests · no ux.md</span>
-                </div>
-                <div class="pm-stage">
-                    <div class="sn">STAGE M1</div>
-                    <div class="st">🕐 Scheduled Scan</div>
-                    <ul><li><span class="bul">•</span> Cron-triggered agent run</li><li><span class="bul">•</span> Kicks off all scanners</li><li><span class="bul">•</span> Collects unified report</li></ul>
-                    <div style="margin-top:5px;display:flex;gap:4px;flex-wrap:wrap;"><span style="font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--pm-bright);background:var(--pm-badge-bg);border-radius:3px;padding:2px 7px;">Weekly cadence</span><span style="font-family:'JetBrains Mono',monospace;font-size:7px;color:#f87171;background:#1e0a0a;border-radius:3px;padding:2px 7px;">Critical: 48h fix SLA</span><span style="font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--text-dim);background:var(--bg-card);border-radius:3px;padding:2px 7px;">High: 5d · Medium: next sprint</span></div>
-                    <div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:3px;"><span class="pm-scan-tag qodana">Qodana</span><span class="pm-scan-tag snyk">Snyk</span><span class="pm-scan-tag sonar">SonarQube</span><span class="pm-scan-tag custom">Convention Analyzer</span></div>
-                    <div class="out">Output: <span class="outv">scan-report.json</span></div>
-                </div>
-                <div class="pm-arrow"><span class="arr">↓</span></div>
-                <div class="pm-stage">
-                    <div class="sn">STAGE M2</div>
-                    <div class="st">🎯 Triage & Prioritize</div>
-                    <ul><li><span class="bul">•</span> Severity scoring</li><li><span class="bul">•</span> Dedup across scanners</li><li><span class="bul">•</span> Group by repo / module</li><li><span class="bul">•</span> Rank by impact + complexity</li><li><span class="bul">•</span> Generates spec-kit artifact bundle</li></ul>
-                    <div class="out">Output: <span class="outv">spec-kit bundle · maintenance preset</span></div>
-                </div>
-                <div class="pm-arrow"><span class="arr">↓</span></div>
-                <div class="pm-hitl-gate">
-                    <div class="sn" style="font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--text-dim);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:2px;">STAGE M3</div>
-                    <div class="gate-title">🛡️ Maintenance Approval Gate</div>
-                    <ul><li><span class="bul">•</span> Review bundle in FeatureOutlook</li><li><span class="bul">•</span> Approve / reject individual fixes</li><li><span class="bul">•</span> Set scope boundaries</li><li><span class="bul">•</span> Confirm no feature conflicts</li></ul>
-                    <div style="margin-top:8px;"><div class="gate-badge"><span class="gb-label">Gate:</span> <span class="gb-val">Human sign-off required before autonomous dispatch</span></div></div>
-                </div>
-                <div class="pm-arrow"><span class="arr">↓</span></div>
-                <div class="pm-trans-card">
-                    <div class="pm-trans-label">TRANSITION ARTIFACT</div>
-                    <div class="pm-stage" style="border:none;padding:0;margin:0;background:transparent;">
-                        <div class="sn">STAGE M4</div>
-                        <div class="st"><span class="plan-ico" style="background:var(--pm-card-border);">📋</span> maintenance-plan.md</div>
-                        <ul><li><span class="bul">•</span> Bug fix specs per issue</li><li><span class="bul">•</span> Dependency upgrade paths</li><li><span class="bul">•</span> Library migration steps</li><li><span class="bul">•</span> Convention violation fixes</li></ul>
-                        <div style="margin:6px 0 4px;display:flex;gap:4px;flex-wrap:wrap;"><span class="pm-scan-tag sonar">acceptance-criteria.md</span><span class="pm-scan-tag snyk">qa-tests.md</span></div>
-                        <div class="gate-badge" style="background:var(--pm-bg);"><span class="gb-label">Output:</span> <span class="gb-val">spec-kit validated bundle · Dispatches to Phase 3</span></div>
-                        <div style="margin-top:10px;display:flex;align-items:center;gap:8px;padding:6px 8px;background:var(--pm-badge-bg);border:1px solid var(--pm-card-border);border-radius:4px;">
-                            <span style="font-size:10px;">↓</span>
-                            <span style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--pm);font-weight:600;">FEEDS INTO PHASE 3</span>
-                            <span style="font-size:7.5px;color:var(--text-dim);">via Orchestrator · same execution pipeline</span>
-                        </div>
                     </div>
                 </div>
             </div>
